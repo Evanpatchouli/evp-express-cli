@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const Path = require("path");
+const chalk = require('chalk');
+const { Command } = require('commander');
+const program = new Command();
+
+let flag = true;
+
+function deleteFolder(folder) {
+  let files = [];
+  const path = folder;
+  if(fs.existsSync("demo")) {
+    files = fs.readdirSync(path);
+    files.forEach(function(file, index) {
+      let curPath = Path.join(path, file);
+      if(fs.statSync(curPath).isDirectory()) {
+        deleteFolder(curPath);
+      } else {
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(folder);
+  } else {
+    flag = false;
+    console.log(chalk.red(`${folder} not exists!`));
+  }
+}
+program
+.version('0.0.1')
+.command("clean <folder>")
+.action(async (folder)=>{
+  deleteFolder(Path.join(process.cwd(), folder));
+});
+
+program.parse(process.argv);
+
+if (flag) {
+  console.log(chalk.green(`Folder ${process.argv[3]} has been clean!`));
+}

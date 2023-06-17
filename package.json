@@ -1,0 +1,24 @@
+{
+  "name": "evp-express-cli",
+  "version": "0.0.11",
+  "description": "evp-express-cli, a Express.js CLI to initialize your Express Project interactively with info, log4js, database and so on.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node demo/index.js",
+    "start": "node bin/cli",
+    "clean": "node bin/clean clean"
+  },
+  "bin": {
+    "evp-express": "./bin/cli"
+  },
+  "keywords": [],
+  "author": "evanpatchouli",
+  "license": "ISC",
+  "dependencies": {
+    "ansi-colors": "^4.1.3",
+    "chalk": "^4.0.0",
+    "cli-progress": "^3.12.0",
+    "commander": "^10.0.1",
+    "inquirer": "^8.0.0"
+  }
+}
