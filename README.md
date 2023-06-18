@@ -5,6 +5,8 @@
 
 The package is a **Express.js CLI** to initialize your Express Project interactively with info, log4js, database and so on.
 
+Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
+
 ## Updates
 
 **v0.0.11**:
@@ -62,6 +64,10 @@ Here are some examples.
 
 ### Create new project
 
+Directly with npx from npm repository :
+```shell
+npx evp-express-cli new <projectName>
+```
 Cli locally installed:
 ```shell
 npx evp-express new <projectName>
@@ -73,7 +79,7 @@ evp-express new <projectName>
 
 ### Running
 
-Change directory to your project's root directory, and start running the server with:  
+Change directory to your project's root directory, and start running the server with: 
 Cli locally installed:
 ```shell
 npx evp-express start
