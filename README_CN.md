@@ -9,7 +9,7 @@
 
 ## Updates
 
-**v0.0.14**:
+**v0.0.16**:
 1. 支持babel，eslint，jest，pkg 和 pm2 开发工具。
 2. 在package.json中添加开发脚本 clean。
 3. 新增 `start`, `--info` 等命令。
