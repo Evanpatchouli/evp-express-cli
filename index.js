@@ -4,6 +4,7 @@ const program = new Command();
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const package = require("./package.json");
+const { spawn } = require('child_process');
 
 module.exports = function cli() {
   program
@@ -118,6 +119,22 @@ module.exports = function cli() {
     console.log(chalk.blue('Start to initialize the project:'));
     creator(answers);
   });
+
+  program.command('start')
+  .description('start and lauch the project dev server.')
+  .action(()=>{
+    const pros = spawn('node', ["index"], {cwd: process.cwd()});
+    pros.stderr.on('error', err => console.error(`${err}`));
+    pros.stdout.on('data', (data) => {
+      console.log(`${data}`);
+    });
+    pros.on('error', (err) =>{
+      console.error(`${err}`);
+    })
+    pros.on('close', (code) => {
+      console.log(`process exited with code ${code}`);
+    }); 
+  })
 
   program.parse(process.argv);
 }
