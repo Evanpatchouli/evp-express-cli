@@ -7,7 +7,12 @@
 
 切换语言: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
-## Updates
+## 新闻
+
+**v0.0.17:**
+1. 支持全局的异步错误捕捉和处理。
+2. 新增 **express-validator** 模板，以"validator"为名。
+3. 修复了 RabbitMQ Proxy 中的一个互斥缺陷。
 
 **v0.0.16**:
 1. 支持babel，eslint，jest，pkg 和 pm2 开发工具。

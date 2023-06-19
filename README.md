@@ -7,9 +7,14 @@ The package is a **Express.js CLI** to initialize your Express Project interacti
 
 Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
-## Updates
+## News
 
-**v0.0.16**:
+**v0.0.17:**
+1. Support global async-errors catch and handle.
+2. New template of **express-validator** as "validator".
+3. Fix 1 bug about mutex in RabbitMQ Proxy.
+
+**v0.0.16:**
 1. Support devtools of babel, eslint, jest, pkg and pm2.
 2. Add devScript clean in package.json
 3. add command `start`, `--info` and so on.
