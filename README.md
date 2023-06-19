@@ -9,6 +9,10 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 ## News
 
+**v0.0.20:**
+1. Fix 1 bug in excatcher.
+2. Fix 1 bug in redisProxy.
+
 **v0.0.19:**
 1. Support exception classified.
 
