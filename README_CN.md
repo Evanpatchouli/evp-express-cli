@@ -9,8 +9,11 @@
 
 ## 新闻
 
+**v0.0.19:**
+1. 支持异常分类。
+
 **v0.0.18:**
-1. 更新 readme.
+1. 更新 readme。
 
 **v0.0.17:**
 1. 支持全局的异步错误捕捉和处理。
@@ -288,15 +291,15 @@ PM2是一个由node驱动的进程管理器. 框架创建了一个基础的配�
 异常处理中间件位于 /midwares/exhandler.js
 
 导出了两个中间件: 捕捉和日志.
-
 ```js
-const Resp = require('../model/resp');
-const logger = require('../utils/logger');
-
 module.exports = {
   excatcher: (err, req, res, next) => {
     if (err) {
-      res.json(Resp.bad(err.message));
+      if(err.type = 'fail'){
+        res.json(Resp.fail(err.message, err.symbol??-1, err.data??null));
+      } else {
+        res.json(Resp.bad(err.message));
+      }
       next(err);
     } else {
       next();
@@ -312,6 +315,9 @@ module.exports = {
   }
 }
 ```
+在你抛出异常前，你可以设置 err.type 为 "fail" 并设置 error.symbol。在异常被捕获后，处理器将会匹配 error.type 来做出不同类型的响应。
+
+你可以对其进行更多的自定义。
 
 ---
 

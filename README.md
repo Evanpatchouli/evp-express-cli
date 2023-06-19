@@ -9,6 +9,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 ## News
 
+**v0.0.19:**
+1. Support exception classified.
+
 **v0.0.18:**
 1. Update readme.
 
@@ -288,15 +291,15 @@ logger tool is at /utils/logger.js
 exhandler is at /midwares/exhandler.js
 
 There are two middlewares: catcher and logger.
-
 ```js
-const Resp = require('../model/resp');
-const logger = require('../utils/logger');
-
 module.exports = {
   excatcher: (err, req, res, next) => {
     if (err) {
-      res.json(Resp.bad(err.message));
+      if(err.type = 'fail'){
+        res.json(Resp.fail(err.message, err.symbol??-1, err.data??null));
+      } else {
+        res.json(Resp.bad(err.message));
+      }
       next(err);
     } else {
       next();
@@ -312,6 +315,7 @@ module.exports = {
   }
 }
 ```
+Before you throw an exception, you can set error.type as "fail" and set error.symbol number. After error catched, handler will match the error.type to response different Resp.
 
 You can customize it more by yourself.
 
