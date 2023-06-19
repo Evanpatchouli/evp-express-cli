@@ -9,6 +9,9 @@
 
 ## 新闻
 
+**v0.0.18:**
+1. 更新 readme.
+
 **v0.0.17:**
 1. 支持全局的异步错误捕捉和处理。
 2. 新增 **express-validator** 模板，以"validator"为名。
@@ -28,6 +31,7 @@
   + [新建项目](#新建项目)
   + [运行](#运行)
   + [模板](#模板)
+    * [验证](#验证)
     * [数据库](#数据库)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -43,6 +47,7 @@
   + [资源](#资源)
   + [配置](#配置)
   + [日志](#日志)
+  + [异常处理](#异常处理)
 
 ## 安装
 
@@ -104,6 +109,53 @@ node index
 ```
 
 ### 模板
+
+
+#### 验证
+
+验证中间件位于 /midwares/valider.js
+
+它导出了这些东西:
+```js
+module.exports = {
+  validator,
+  ValidRace,
+  ValidAll,
+  ValidQueue,
+  ValidQueueAll
+}
+```
+- validator 是 "express-validator"。
+- ValidRace 是并发的验证检验链，并抛出最早检验出错误的那个。
+- ValidAll 是并发的验证检验链，并抛出全部错误。
+- ValidQueue 是串行的验证检验链，并抛出最早检验出错误的那个。
+- ValidQueueAll 是串行的验证检验链，并抛出全部错误。
+
+示例:
+```js
+const { validator, ValidQueue } = require('../midwares/valider');
+
+router.get('/',
+  ValidQueue([
+    validator.query('name').trim().notEmpty().withMessage("name cannot be empty"),
+    validator.query('age').trim()
+      .notEmpty().withMessage("age cannot be empty").bail()
+      .isInt().withMessage("age must be Int").bail().toInt()
+  ]),
+(req, res, next) => {
+  res.send(`Hello ${req.query.name}, you are ${req.query.age} years old!`);
+});
+```
+你将会得到如下结果:
+```json
+{
+  "code":500,
+  "msg":"name cannot be empty",
+  "data":null,
+  "symbol":-1,
+  "type":"Bad Request"
+}
+```
 
 #### 数据库
 
@@ -226,6 +278,40 @@ PM2是一个由node驱动的进程管理器. 框架创建了一个基础的配�
 ### 配置
 
 绝大多数配置信息被写在 assets/config.yaml 中. 你可以引用config通过 `global.__config` 或者 `__config`.
+
+### 日志
+
+日志工具位于 /utils/logger.js
+
+### 异常处理
+
+异常处理中间件位于 /midwares/exhandler.js
+
+导出了两个中间件: 捕捉和日志.
+
+```js
+const Resp = require('../model/resp');
+const logger = require('../utils/logger');
+
+module.exports = {
+  excatcher: (err, req, res, next) => {
+    if (err) {
+      res.json(Resp.bad(err.message));
+      next(err);
+    } else {
+      next();
+    }
+  },
+
+  exlogger: (err,req,res,next)=>{
+    if (logger.level.level <= 10000) {
+      logger.error(err);
+      return;
+    }
+    logger.error(err.message);
+  }
+}
+```
 
 ---
 

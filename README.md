@@ -9,6 +9,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 ## News
 
+**v0.0.18:**
+1. Update readme.
+
 **v0.0.17:**
 1. Support global async-errors catch and handle.
 2. New template of **express-validator** as "validator".
@@ -28,6 +31,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Create new project](#create-new-project)
   + [Running](#running)
   + [Templates](#templates)
+    * [Validator](#validator)
     * [Database](#database)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -43,6 +47,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Assets](#assets)
   + [Config](#config)
   + [Logger](#logger)
+  + [ExHandler](#exhandler)
 
 ## Install
 
@@ -104,6 +109,53 @@ node index
 ```
 
 ### Tempates
+
+
+#### Validator
+
+validator middleware is at /midwares/valider.js
+
+It exports these midware functions:
+```js
+module.exports = {
+  validator,
+  ValidRace,
+  ValidAll,
+  ValidQueue,
+  ValidQueueAll
+}
+```
+- validator is package of "express-validator".
+- ValidRace is to valid chains concurrently and throws the fastest one.
+- ValidAll is to valid chains concurrently and throws all result.
+- ValidQueue is to valid chains sequentially and throws the first one.
+- ValidQueueAll is to valid chains sequentially and throws all result.
+
+example:
+```js
+const { validator, ValidQueue } = require('../midwares/valider');
+
+router.get('/',
+  ValidQueue([
+    validator.query('name').trim().notEmpty().withMessage("name cannot be empty"),
+    validator.query('age').trim()
+      .notEmpty().withMessage("age cannot be empty").bail()
+      .isInt().withMessage("age must be Int").bail().toInt()
+  ]),
+(req, res, next) => {
+  res.send(`Hello ${req.query.name}, you are ${req.query.age} years old!`);
+});
+```
+And you will get response like this:
+```json
+{
+  "code":500,
+  "msg":"name cannot be empty",
+  "data":null,
+  "symbol":-1,
+  "type":"Bad Request"
+}
+```
 
 #### Database
 
@@ -226,6 +278,42 @@ The framework use assets as default static resources folder. Please don't change
 ### Config
 
 Most of the configuration are written in assets/config.yaml. And you can get the config by require `global.__config` or `__config`.
+
+### logger
+
+logger tool is at /utils/logger.js
+
+### Exhandler
+
+exhandler is at /midwares/exhandler.js
+
+There are two middlewares: catcher and logger.
+
+```js
+const Resp = require('../model/resp');
+const logger = require('../utils/logger');
+
+module.exports = {
+  excatcher: (err, req, res, next) => {
+    if (err) {
+      res.json(Resp.bad(err.message));
+      next(err);
+    } else {
+      next();
+    }
+  },
+
+  exlogger: (err,req,res,next)=>{
+    if (logger.level.level <= 10000) {
+      logger.error(err);
+      return;
+    }
+    logger.error(err.message);
+  }
+}
+```
+
+You can customize it more by yourself.
 
 ---
 
