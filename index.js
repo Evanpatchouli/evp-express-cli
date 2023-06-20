@@ -5,6 +5,8 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const package = require("./package.json");
 const { spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = function cli() {
   program
@@ -123,7 +125,7 @@ module.exports = function cli() {
   program.command('start')
   .description('start and lauch the project dev server.')
   .action(()=>{
-    const pros = spawn('node', ["index"], {cwd: process.cwd()});
+    const pros = spawn('node', ["src/index"], {cwd: process.cwd()});
     pros.stderr.on('error', err => console.error(`${err}`));
     pros.stdout.on('data', (data) => {
       console.log(`${data}`);
@@ -136,5 +138,42 @@ module.exports = function cli() {
     }); 
   })
 
+  
+
+  let flag = true;
+
+  function deleteFolder(folder) {
+    let files = [];
+    const _path = folder;
+    if(fs.existsSync(_path)) {
+      files = fs.readdirSync(_path);
+      files.forEach(function(file, index) {
+        let curPath = path.join(_path, file);
+        if(fs.statSync(curPath).isDirectory()) {
+          deleteFolder(curPath);
+        } else {
+          // process.stdout.write(`Delete file: ${curPath}\r`);
+          fs.unlinkSync(curPath);
+        }
+      });
+      // process.stdout.write(`Delete dictory: ${folder}\r`);
+      fs.rmdirSync(folder);
+    } else {
+      flag = false;
+      console.log(chalk.red(`${folder} not exists!`));
+    }
+  }
+
+  program
+  .command("clean <folder>")
+  .action((folder)=>{
+    deleteFolder(path.join(process.cwd(), folder));
+  });
+
   program.parse(process.argv);
+
+  if (flag) {
+    process.stdout.write("\r\x1b[K")
+    console.log(chalk.green(`Folder ${process.argv[3]} has been clean!`));
+  }
 }

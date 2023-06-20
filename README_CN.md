@@ -9,6 +9,11 @@
 
 ## 新闻
 
+**v1.0.0:**
+1. 生成的源码移至src目录。
+2. 新增public目录。
+2. 修复runSql的缺陷。
+
 **v0.0.20:**
 1. 修复 excatcher 中的 1 处bug。
 2. 修复 redisProxy 中的 1 处bug。

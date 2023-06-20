@@ -9,6 +9,11 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 ## News
 
+**v1.0.0:**
+1. The source code generated moved to src folder.
+2. Add public folder.
+3. Fix 1 bug in runSql.
+
 **v0.0.20:**
 1. Fix 1 bug in excatcher.
 2. Fix 1 bug in redisProxy.
