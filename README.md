@@ -9,6 +9,11 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 ## News
 
+**Latest 5 versions reports:**
+
+**v1.0.1:**
+1. 1 small patch.
+
 **v1.0.0:**
 1. The source code generated moved to src folder.
 2. Add public folder.
@@ -23,17 +28,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **v0.0.18:**
 1. Update readme.
-
-**v0.0.17:**
-1. Support global async-errors catch and handle.
-2. New template of **express-validator** as "validator".
-3. Fix 1 bug about mutex in RabbitMQ Proxy.
-
-**v0.0.16:**
-1. Support devtools of babel, eslint, jest, pkg and pm2.
-2. Add devScript clean in package.json
-3. add command `start`, `--info` and so on.
-4. add Chinese Documentation.
 
 ## Documentation
 

@@ -138,11 +138,7 @@ module.exports = function cli() {
     }); 
   })
 
-  
-
-  let flag = true;
-
-  function deleteFolder(folder) {
+  function deleteFolder(folder, tolist) {
     let files = [];
     const _path = folder;
     if(fs.existsSync(_path)) {
@@ -150,13 +146,19 @@ module.exports = function cli() {
       files.forEach(function(file, index) {
         let curPath = path.join(_path, file);
         if(fs.statSync(curPath).isDirectory()) {
-          deleteFolder(curPath);
+          deleteFolder(curPath, tolist);
         } else {
-          // process.stdout.write(`Delete file: ${curPath}\r`);
+          if(tolist){
+            process.stdout.write("\r\x1b[K");
+            process.stdout.write(`Delete file: ${curPath}`);
+          }
           fs.unlinkSync(curPath);
         }
       });
-      // process.stdout.write(`Delete dictory: ${folder}\r`);
+      if(tolist){
+        process.stdout.write("\r\x1b[K");
+        process.stdout.write(`Delete dictory: ${folder}`);
+      }
       fs.rmdirSync(folder);
     } else {
       flag = false;
@@ -166,14 +168,22 @@ module.exports = function cli() {
 
   program
   .command("clean <folder>")
-  .action((folder)=>{
-    deleteFolder(path.join(process.cwd(), folder));
+  .description(
+    'Clean certain file path.\n'+
+    '  Options:\n'+
+    '    -l,--list             List out the deleted files and folders.')
+  .option('-l, --list', 'List out the deleted files and folders.')
+  .action((folder, options)=>{
+    let flag = false;
+    flag = true;
+    deleteFolder(path.join(process.cwd(), folder), options.list);
+    if (flag) {
+      process.stdout.write("\r\x1b[K");
+      console.log(chalk.green(`Folder ${folder} has been clean!`));
+    }
   });
 
   program.parse(process.argv);
 
-  if (flag) {
-    process.stdout.write("\r\x1b[K")
-    console.log(chalk.green(`Folder ${process.argv[3]} has been clean!`));
-  }
+
 }
