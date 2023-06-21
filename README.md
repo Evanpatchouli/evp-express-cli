@@ -11,6 +11,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.0.2:**
+1. 1 small patch.
+
 **v1.0.1:**
 1. 1 small patch.
 
@@ -25,9 +28,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **v0.0.19:**
 1. Support exception classified.
-
-**v0.0.18:**
-1. Update readme.
 
 ## Documentation
 
