@@ -13,12 +13,15 @@
 
 **最新的5个版本报告:**
 
+**v1.0.5**
+1. 修复缺陷: v1.0.4 在 config.js 中存在两个错误
+
 **v1.0.4**
 1. 修复缺陷: v1.0.3 在 init.js 中存在一个错误
 
 **v1.0.3**
 1. 优化错误处理。
-  
+
 通常，在捕获全局异常后，默认的是坏响应，但有时候我们不想要坏响应。
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
@@ -35,15 +38,6 @@ throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 
 **v1.0.1:**
 1. 1个小补丁.
-
-**v1.0.0:**
-1. 生成的源码移至src目录。
-2. 新增public目录。
-2. 修复runSql的缺陷。
-
-**v0.0.20:**
-1. 修复 excatcher 中的 1 处bug。
-2. 修复 redisProxy 中的 1 处bug。
 
 ## 文档
 

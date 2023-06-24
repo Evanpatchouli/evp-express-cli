@@ -13,11 +13,15 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.0.5**
+1. Fix bugs: v1.0.4 has 2 wrong in config.js
+
 **v1.0.4**
 1. Fix bugs: v1.0.3 has a wrong in init.js
 
 **v1.0.3**
-1. Improve error handler.  
+1. Improve error handler.
+
 Usually, after catching global errors, the default response is Resp.bad. But sometimes we don't wanna bad.
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
@@ -34,15 +38,6 @@ The framework only supports code of 200 and 400, but you can customize it more.
 
 **v1.0.1:**
 1. 1 small patch.
-
-**v1.0.0:**
-1. The source code generated moved to src folder.
-2. Add public folder.
-3. Fix 1 bug in runSql.
-
-**v0.0.20:**
-1. Fix 1 bug in excatcher.
-2. Fix 1 bug in redisProxy.
 
 ## Documentation
 
