@@ -13,6 +13,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.0.4**
+1. Fix bugs: v1.0.3 has a wrong in init.js
+
 **v1.0.3**
 1. Improve error handler.  
 Usually, after catching global errors, the default response is Resp.bad. But sometimes we don't wanna bad.
