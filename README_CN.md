@@ -2,6 +2,8 @@
 
 [![npm](https://badge.fury.io/js/evp-express-cli.svg)](https://www.npmjs.com/package/evp-express-cli)
 
+[![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
+
 
 该软件包是一个 **Express.js CLI**，用于使用 info、log4js、数据库等交互初始化您的 Express 项目。
 
@@ -10,6 +12,20 @@
 ## 新闻
 
 **最新的5个版本报告:**
+
+**v1.0.3**
+1. 优化错误处理。
+  
+通常，在捕获全局异常后，默认的是坏响应，但有时候我们不想要坏响应。
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
+```
+甚至我们可能不需要返回响应，我们可以把 back 设置为 "false"。
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
+```
+框架只预置了 200 和 400 两个code，你可以自行拓展。
+2. 优化配置加载过程。
 
 **v1.0.2:**
 1. 1个小补丁.
@@ -25,9 +41,6 @@
 **v0.0.20:**
 1. 修复 excatcher 中的 1 处bug。
 2. 修复 redisProxy 中的 1 处bug。
-
-**v0.0.19:**
-1. 支持异常分类。
 
 ## 文档
 
@@ -298,10 +311,18 @@ PM2是一个由node驱动的进程管理器. 框架创建了一个基础的配�
 module.exports = {
   excatcher: (err, req, res, next) => {
     if (err) {
-      if(err.type = 'fail'){
-        res.json(Resp.fail(err.message, err.symbol??-1, err.data??null));
-      } else {
-        res.json(Resp.bad(err.message));
+      const {code,msg,symbol,data,back} = err.message;
+      if (back != false && code) {
+        if (code) {
+          if (code == 400) {
+            res.json(Resp.fail(msg, symbol??-1, data??null));
+          }
+          if (code == 500) {
+            res.json(Resp.bad(msg, symbol??0, data??null));
+          }
+        } else {
+          res.json(Resp.bad(err.message));
+        }
       }
       next(err);
     } else {
@@ -318,9 +339,15 @@ module.exports = {
   }
 }
 ```
-在你抛出异常前，你可以设置 err.type 为 "fail" 并设置 error.symbol。在异常被捕获后，处理器将会匹配 error.type 来做出不同类型的响应。
-
-你可以对其进行更多的自定义。
+通常，在捕获全局异常后，默认的是坏响应，但有时候我们不想要坏响应。
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
+```
+甚至我们可能不需要返回响应，我们可以把 back 设置为 "false"。
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
+```
+框架只预置了 200 和 400 两个code，你可以自行拓展。
 
 ---
 

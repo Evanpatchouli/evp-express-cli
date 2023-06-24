@@ -100,13 +100,6 @@ module.exports = function cli() {
         default: false,
         when: (answers) => !answers.create,
       }
-      // {console.log(answers);
-      //   type: 'password',
-      //   name: 'rabbitmqPass',
-      //   message: 'RabbitMQ password:',
-      //   mask: '*',
-      //   default: 'root',
-      // },
     ];
 
     let answers = await inquirer.prompt(questions);

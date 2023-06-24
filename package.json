@@ -1,6 +1,6 @@
 {
   "name": "evp-express-cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "evp-express-cli, a Express.js CLI to initialize your Express Project interactively with info, log4js, database and so on.",
   "main": "index.js",
   "scripts": {

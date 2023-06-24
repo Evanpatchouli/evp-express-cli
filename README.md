@@ -2,6 +2,8 @@
 
 [![npm](https://badge.fury.io/js/evp-express-cli.svg)](https://www.npmjs.com/package/evp-express-cli)
 
+[![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
+
 
 The package is a **Express.js CLI** to initialize your Express Project interactively with info, log4js, database and so on.
 
@@ -10,6 +12,19 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 ## News
 
 **Latest 5 versions reports:**
+
+**v1.0.3**
+1. Improve error handler.  
+Usually, after catching global errors, the default response is Resp.bad. But sometimes we don't wanna bad.
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
+```
+Even we don't need to retuen the error, we can give "false" to "back".
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
+```
+The framework only supports code of 200 and 400, but you can customize it more.
+2. Improve config initialization.
 
 **v1.0.2:**
 1. 1 small patch.
@@ -25,9 +40,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 **v0.0.20:**
 1. Fix 1 bug in excatcher.
 2. Fix 1 bug in redisProxy.
-
-**v0.0.19:**
-1. Support exception classified.
 
 ## Documentation
 
@@ -298,10 +310,18 @@ There are two middlewares: catcher and logger.
 module.exports = {
   excatcher: (err, req, res, next) => {
     if (err) {
-      if(err.type = 'fail'){
-        res.json(Resp.fail(err.message, err.symbol??-1, err.data??null));
-      } else {
-        res.json(Resp.bad(err.message));
+      const {code,msg,symbol,data,back} = err.message;
+      if (back != false && code) {
+        if (code) {
+          if (code == 400) {
+            res.json(Resp.fail(msg, symbol??-1, data??null));
+          }
+          if (code == 500) {
+            res.json(Resp.bad(msg, symbol??0, data??null));
+          }
+        } else {
+          res.json(Resp.bad(err.message));
+        }
       }
       next(err);
     } else {
@@ -318,9 +338,15 @@ module.exports = {
   }
 }
 ```
-Before you throw an exception, you can set error.type as "fail" and set error.symbol number. After error catched, handler will match the error.type to response different Resp.
-
-You can customize it more by yourself.
+Usually, after catching global errors, the default response is Resp.bad. But sometimes we don't wanna bad.
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
+```
+Even we don't need to retuen the error, we can give "false" to "back".
+```javascript
+throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
+```
+The framework only supports code of 200 and 400, but you can customize it more.
 
 ---
 
