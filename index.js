@@ -176,7 +176,26 @@ module.exports = function cli() {
     }
   });
 
-  program.parse(process.argv);
+  program
+  .command("show")
+  .description('Show all templates and devtools.')
+  .action(()=>{
+    console.log(chalk.blueBright("Templates:"));
+    const templates = ['validator', 'database', 'redis', 'auth', 'rabbitmq', 'socketio', 'nacos'];
+    templates.forEach(template => console.log(`  ${template}`));
+    console.log(chalk.blueBright("Devtools:"));
+    const devtools = ['jest', 'pkg', 'pm2', 'eslint', 'babel'];
+    devtools.forEach(devtool => console.log(`  ${devtool}`));
+  });
 
+  program
+  .command("add <template>")
+  .description('Add certain template or devtool.')
+  .action((template)=>{
+    const add = require('./lib/add');
+    add(template);
+  });
+
+  program.parse(process.argv);
 
 }

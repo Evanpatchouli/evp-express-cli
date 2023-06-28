@@ -1,6 +1,10 @@
 # evp-express-cli
 
-[![npm](https://badge.fury.io/js/evp-express-cli.svg)](https://www.npmjs.com/package/evp-express-cli)
+<p>
+  <a href="https://www.npmjs.com/package/evp-express-cli"><img alt="npmpackage" src="https://badge.fury.io/js/evp-express-cli.svg"></a>
+  <a href="https://nodejs.org/en"><img alt="nodejs" src="https://img.shields.io/badge/NodeJS-16.17+-black.svg"></a>
+  <a href="https://www.npmjs.com/package/express"><img alt="express" src="https://img.shields.io/badge/Express-4.x-%23007fff.svg"></a>
+</p>
 
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
 
@@ -12,6 +16,10 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 ## News
 
 **Latest 5 versions reports:**
+
+**v1.0.6**
+1. New command of `add <template>`
+2. Fix bugs: v1.0.5 has 1 wrong in config.js
 
 **v1.0.5**
 1. Fix bugs: v1.0.4 has 2 wrong in config.js
@@ -34,9 +42,6 @@ The framework only supports code of 200 and 400, but you can customize it more.
 2. Improve config initialization.
 
 **v1.0.2:**
-1. 1 small patch.
-
-**v1.0.1:**
 1. 1 small patch.
 
 ## Documentation
@@ -88,6 +93,8 @@ Here are some examples.
  - `-h`, `--help`:  display help for command
  - `new <projectName>`:  create a new Express.js project with the specified name
  - `start`: start and lauch the project dev server.
+ - `clean <path>`: clean up all files in this path if exists.
+ - `add <template>`: add certain template or devtool.
 
 ### Create new project
 

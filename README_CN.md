@@ -1,6 +1,10 @@
 # evp-express-cli
 
-[![npm](https://badge.fury.io/js/evp-express-cli.svg)](https://www.npmjs.com/package/evp-express-cli)
+<p>
+  <a href="https://www.npmjs.com/package/evp-express-cli"><img alt="npmpackage" src="https://badge.fury.io/js/evp-express-cli.svg"></a>
+  <a href="https://nodejs.org/en"><img alt="nodejs" src="https://img.shields.io/badge/NodeJS-16.17+-black.svg"></a>
+  <a href="https://www.npmjs.com/package/express"><img alt="express" src="https://img.shields.io/badge/Express-4.x-%23007fff.svg"></a>
+</p>
 
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
 
@@ -12,6 +16,10 @@
 ## 新闻
 
 **最新的5个版本报告:**
+
+**v1.0.6**
+1. 新命令`add <template>`
+2. 修复缺陷: v1.0.5 在 config.js 存在一个错误
 
 **v1.0.5**
 1. 修复缺陷: v1.0.4 在 config.js 中存在两个错误
@@ -34,9 +42,6 @@ throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 2. 优化配置加载过程。
 
 **v1.0.2:**
-1. 1个小补丁.
-
-**v1.0.1:**
 1. 1个小补丁.
 
 ## 文档
@@ -88,6 +93,8 @@ npm i evp-express-cli -g
  - `-h`, `--help`:  显示帮助信息
  - `new <projectName>`:  以一个特定的名字新建项目
  - `start`: 启动开发服务器
+ - `clean <path>`: 删除指定路径所有文件
+ - `add <template>`: 添加指定的模板或开发工具
 
 ### 新建项目
 
