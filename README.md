@@ -17,6 +17,11 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.0.9**
+1. Improve utils/knex.js runSql function
+2. New util/knex.js runSqlFile function
+3. New Text bodyparser in midwares/bodyparser.js
+
 **v1.0.8**
 1. Fix bugs: v1.0.7 has several wrongs
 
@@ -29,9 +34,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **v1.0.5**
 1. Fix bugs: v1.0.4 has 2 wrong in config.js
-
-**v1.0.4**
-1. Fix bugs: v1.0.3 has a wrong in init.js
 
 ## Documentation
 
