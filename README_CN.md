@@ -17,6 +17,9 @@
 
 **最新的5个版本报告:**
 
+**v1.0.8**
+1. 修复缺陷: v1.0.7 有少许错误
+
 **v1.0.7**
 1. 修复缺陷: v1.0.6 在 config.js 中存在一个错误
 
@@ -29,20 +32,6 @@
 
 **v1.0.4**
 1. 修复缺陷: v1.0.3 在 init.js 中存在一个错误
-
-**v1.0.3**
-1. 优化错误处理。
-
-通常，在捕获全局异常后，默认的是坏响应，但有时候我们不想要坏响应。
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
-```
-甚至我们可能不需要返回响应，我们可以把 back 设置为 "false"。
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
-```
-框架只预置了 200 和 400 两个code，你可以自行拓展。
-2. 优化配置加载过程。
 
 ## 文档
 
