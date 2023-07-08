@@ -3,7 +3,7 @@ const { Command } = require('commander');
 const program = new Command();
 const inquirer = require('inquirer');
 const chalk = require('chalk');
-const package = require("./package.json");
+const pkg = require("./package.json");
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -11,16 +11,20 @@ const fs = require('fs');
 module.exports = function cli() {
   program
   .name('evp-express')
-  .version(`evp-express-cli@${package.version}`, '-v, --version', 'show version')
+  .version(`evp-express-cli@${pkg.version}`, '-v, --version', 'show version')
   .description('Cli to create a new Express.js project')
   .option('-i, --info', 'show information')
   .action(()=>{
-    let offset = '';
-    for (let i = 0; i <28-`evp-express-cli@${package.version}`.length/2; i++) {
-      offset += " ";
+    let left = '';
+    for (let i = 0; i <27-`evp-express-cli@${pkg.version}`.length/2; i++) {
+      left += " ";
+    }
+    let right = '';
+    for (let i = 0; i < 55 - left - `evp-express-cli@${pkg.version}`.length - 27; i++) {
+      right += " ";
     }
     console.log(' -------------------------------------------------------');
-    console.log(`|${offset}evp-express-cli@${package.version}                |`);
+    console.log(`|${left}evp-express-cli@${pkg.version}${right}          |`);
     console.log(`|                 Author: evanpatchouli                 |`);
     console.log('|        A cli to create a new Express.js project.      |')
     console.log(`|  Repo: https://www.npmjs.com/package/evp-express-cli  |`)

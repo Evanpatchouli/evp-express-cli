@@ -17,6 +17,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.0.7**
+1. Fix bugs: v1.0.6 has 1 wrong in config.js
+
 **v1.0.6**
 1. New command of `add <template>`
 2. Fix bugs: v1.0.5 has 1 wrong in config.js
@@ -40,9 +43,6 @@ throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 ```
 The framework only supports code of 200 and 400, but you can customize it more.
 2. Improve config initialization.
-
-**v1.0.2:**
-1. 1 small patch.
 
 ## Documentation
 

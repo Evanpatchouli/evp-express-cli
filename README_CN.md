@@ -17,6 +17,9 @@
 
 **最新的5个版本报告:**
 
+**v1.0.7**
+1. 修复缺陷: v1.0.6 在 config.js 中存在一个错误
+
 **v1.0.6**
 1. 新命令`add <template>`
 2. 修复缺陷: v1.0.5 在 config.js 存在一个错误
@@ -40,9 +43,6 @@ throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 ```
 框架只预置了 200 和 400 两个code，你可以自行拓展。
 2. 优化配置加载过程。
-
-**v1.0.2:**
-1. 1个小补丁.
 
 ## 文档
 
