@@ -17,6 +17,10 @@
 
 **最新的5个版本报告:**
 
+**v1.1.0**
+1. 重构 excather 并支持异常分类
+2. 重构 Resp 的结构
+
 **v1.0.9**
 1. 优化 utils/knex.js 中的 runSql 函数
 2. 新增 util/knex.js 中的 runSqlFile 函数
@@ -32,8 +36,6 @@
 1. 新命令`add <template>`
 2. 修复缺陷: v1.0.5 在 config.js 存在一个错误
 
-**v1.0.5**
-1. 修复缺陷: v1.0.4 在 config.js 中存在两个错误
 
 ## 文档
 
@@ -59,6 +61,7 @@
   + [资源](#资源)
   + [配置](#配置)
   + [日志](#日志)
+  + [响应](#响应)
   + [异常处理](#异常处理)
 
 ## 安装
@@ -297,52 +300,48 @@ PM2是一个由node驱动的进程管理器. 框架创建了一个基础的配�
 
 日志工具位于 /utils/logger.js
 
+### 响应
+
+框架设置了一个如下结构的响应体类：
+```typescript
+class Resp {
+  ok: boolean;
+  msg: string;
+  data: any;
+  symbol: number;
+  type: string;
+}
+```
+并内置了 ok, fail, bad 三种方法
+
 ### 异常处理
 
 异常处理中间件位于 /midwares/exhandler.js
 
-导出了两个中间件: 捕捉和日志.
-```js
-module.exports = {
-  excatcher: (err, req, res, next) => {
-    if (err) {
-      const {code,msg,symbol,data,back} = err.message;
-      if (back != false && code) {
-        if (code) {
-          if (code == 400) {
-            res.json(Resp.fail(msg, symbol??-1, data??null));
-          }
-          if (code == 500) {
-            res.json(Resp.bad(msg, symbol??0, data??null));
-          }
-        } else {
-          res.json(Resp.bad(err.message));
-        }
-      }
-      next(err);
-    } else {
-      next();
-    }
-  },
+这里导出了两个中间件: excatcher and exlogger。
 
-  exlogger: (err,req,res,next)=>{
-    if (logger.level.level <= 10000) {
-      logger.error(err);
-      return;
-    }
-    logger.error(err.message);
+Excather 捕捉异常并尝试将 err.message 作为 json 字符串解析, 如果解析成功, 这代表是自定义的异常, 否则将被当作通用异常并返回 "System Error" 给请求源。
+
+正如所说的, 在捕获错误后, 默认的是返回"System Error"的坏响应, 如果我们想要更多的情况, 我们可以按照下面这种形式返抛出异常:
+```js
+throw new Error(
+  JSON.stringify({
+    code: 400,  // 异常分类码
+    msg: "Invalid arguments."  // 描述信息
+    symbol: 20000,  // 业务码或者错误码，如果你需要的话
+    data: {},  // 携带的数据，格式任意
+    back: true,  // 是否返回上面的msg，否则返回"System Error"
+    status: 500, // http状态码，默认200
   }
-}
+);
 ```
-通常，在捕获全局异常后，默认的是坏响应，但有时候我们不想要坏响应。
+举几个例子：
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
 ```
-甚至我们可能不需要返回响应，我们可以把 back 设置为 "false"。
+当我们不想返回具体的描述信息, 我们将 back 设置为 false。
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
-```
-框架只预置了 200 和 400 两个code，你可以自行拓展。
 
 ---
 

@@ -17,6 +17,10 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.1.0**
+1. refactor exhandler and support exception classification
+2. refactor Resp structure
+
 **v1.0.9**
 1. Improve utils/knex.js runSql function
 2. New util/knex.js runSqlFile function
@@ -59,6 +63,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Assets](#assets)
   + [Config](#config)
   + [Logger](#logger)
+  + [Response](#response)
   + [ExHandler](#exhandler)
 
 ## Install
@@ -291,58 +296,56 @@ The framework use assets as default static resources folder. Please don't change
 
 ### Config
 
-Most of the configuration are written in assets/config.yaml. And you can get the config by require `global.__config` or `__config`.
+Most of the configuration are written in assets/config.yaml. And you can get the config by require `global.__config` or `__config`. Or you can get config from config.js by `require('path/to/config.js').get()`.
 
 ### logger
 
 logger tool is at /utils/logger.js
 
+### Response
+
+Framework set a Resp of this：
+```typescript
+class Resp {
+  ok: boolean;
+  msg: string;
+  data: any;
+  symbol: number;
+  type: string;
+}
+```
+Resp provides three builder methods of ok, fail, bad.
+
 ### Exhandler
 
 exhandler is at /midwares/exhandler.js
 
-There are two middlewares: catcher and logger.
-```js
-module.exports = {
-  excatcher: (err, req, res, next) => {
-    if (err) {
-      const {code,msg,symbol,data,back} = err.message;
-      if (back != false && code) {
-        if (code) {
-          if (code == 400) {
-            res.json(Resp.fail(msg, symbol??-1, data??null));
-          }
-          if (code == 500) {
-            res.json(Resp.bad(msg, symbol??0, data??null));
-          }
-        } else {
-          res.json(Resp.bad(err.message));
-        }
-      }
-      next(err);
-    } else {
-      next();
-    }
-  },
+There are two middlewares: excatcher and exlogger.
 
-  exlogger: (err,req,res,next)=>{
-    if (logger.level.level <= 10000) {
-      logger.error(err);
-      return;
-    }
-    logger.error(err.message);
+Excather catch the exception and try to parse err.message as json string, if successful, it means it's our customized exception, if not, it will treat it as common exception and just return "System Error" to request source.
+
+As said, after catching global errors, the default response is Resp.bad with "System Error", if we want more, we can throw a exception by this structure:
+```js
+throw new Error(
+  JSON.stringify({
+    code: 400,  // exception code
+    msg: "Invalid arguments."  // description
+    symbol: 20000,  // service code or error code if you need it
+    data: {},  // type of data is any
+    back: true,  // whether to return the msg, if not, will return "System Error"
+    status: 500, // http status code, default is 200
   }
-}
+);
 ```
-Usually, after catching global errors, the default response is Resp.bad. But sometimes we don't wanna bad.
+For some examples:
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
 ```
-Even we don't need to retuen the error, we can give "false" to "back".
+When we don't need to retuen the msg, we can give "false" to "back".
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 ```
-The framework only supports code of 200 and 400, but you can customize it more.
+The framework just supports exception code of 200 and 400, but you can customize it more.
 
 ---
 
