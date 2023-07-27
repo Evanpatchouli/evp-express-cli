@@ -17,6 +17,9 @@
 
 **最新的5个版本报告:**
 
+**v1.1.1**
+1. 提供了 websocket 模板
+
 **v1.1.0**
 1. 重构 excather 并支持异常分类
 2. 重构 Resp 的结构
@@ -32,10 +35,6 @@
 **v1.0.7**
 1. 修复缺陷: v1.0.6 在 config.js 中存在一个错误
 
-**v1.0.6**
-1. 新命令`add <template>`
-2. 修复缺陷: v1.0.5 在 config.js 存在一个错误
-
 
 ## 文档
 
@@ -50,6 +49,7 @@
     * [Redis](#redis)
     * [Auth](#auth)
     * [RabbitMQ](#rabbitmq)
+    * [Websocket](#websocket)
     * [SocketIO](#socketio)
     * [Nacos](#nacos)
   + [开发工具](#开发工具)
@@ -239,6 +239,14 @@ app.get('/', async(req, res)=>{
 ```
 
 更多的配置信息可以在config.yaml找到.
+
+#### Websocket
+
+Websocket模板依赖于 **ws.js** 并且挂载服务器于 express-http-server 上.
+
+你可以引用 wsProxy 通过 `const { instance } = require('utils/wsProxy');`. 你可以使用 `instance.server` 去获取 Websocket 服务器实例。
+
+**警告：** 不要同时使用 Websocket 模板和 SocketIO 模板。
 
 #### SocketIO
 

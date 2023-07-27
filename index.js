@@ -71,9 +71,9 @@ module.exports = function cli() {
         name: 'templates',
         message: 'Choose preserved templates:',
         choices: [
-          'None', 'validator', 'database', 'redis', 'auth', 'rabbitmq', 'socketio', 'nacos', 'All'
+          'None', 'validator', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos', 'All'
         ],
-        pageSize: 9,
+        pageSize: 10,
         loop: false
       },
       {

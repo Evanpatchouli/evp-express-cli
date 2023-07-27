@@ -17,6 +17,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.1.1**
+1. provide websocket template
+
 **v1.1.0**
 1. refactor exhandler and support exception classification
 2. refactor Resp structure
@@ -36,9 +39,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 1. New command of `add <template>`
 2. Fix bugs: v1.0.5 has 1 wrong in config.js
 
-**v1.0.5**
-1. Fix bugs: v1.0.4 has 2 wrong in config.js
-
 ## Documentation
 
 - [Installation](#install)
@@ -52,6 +52,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
     * [Redis](#redis)
     * [Auth](#auth)
     * [RabbitMQ](#rabbitmq)
+    * [Websocket](#websocket)
     * [SocketIO](#socketio)
     * [Nacos](#nacos)
   + [DevTools](#devtools)
@@ -241,6 +242,14 @@ app.get('/', async(req, res)=>{
 ```
 
 More about its configuration can be found in config.yaml.
+
+#### Websocket
+
+The Websocket Template **ws.js** and mounts Websocket Server on express-http-server.
+
+Your can require wsProxy by `const { instance } = require('utils/wsProxy');`. You can use `instance.server` to get Websocket Server instance。
+
+**Warning:** Do not use WebSocket Template and SocketIO Template together.
 
 #### SocketIO
 
