@@ -17,6 +17,10 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.2.1**
+1. support TypeScript
+2. provide zod template
+
 **v1.1.1**
 1. provide websocket template
 
@@ -32,13 +36,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 **v1.0.8**
 1. Fix bugs: v1.0.7 has several wrongs
 
-**v1.0.7**
-1. Fix bugs: v1.0.6 has 1 wrong in config.js
-
-**v1.0.6**
-1. New command of `add <template>`
-2. Fix bugs: v1.0.5 has 1 wrong in config.js
-
 ## Documentation
 
 - [Installation](#install)
@@ -48,6 +45,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Running](#running)
   + [Templates](#templates)
     * [Validator](#validator)
+    * [Zod](#zod)
     * [Database](#database)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -66,6 +64,8 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Logger](#logger)
   + [Response](#response)
   + [ExHandler](#exhandler)
+  + [TypeScript](#typescript)
+  + [EvpConfig](#evpconfig)
 
 ## Install
 
@@ -175,6 +175,42 @@ And you will get response like this:
   "symbol":-1,
   "type":"Bad Request"
 }
+```
+
+#### Zod
+
+The Zod template is another validator, you can use both the Zod and Validator. Template provide a midware factory, allow you to check `headers`, `body`, `query`, `params`，and you can use it like this:
+```javascript
+const { Router } = require('express');
+const logger = require('../utils/logger');
+const Resp = require('../model/resp');
+const { ZodValid } = require('../midwares/zod');
+const { z } = require('zod');
+const { Json } = require('../midwares/bodyParser');
+
+const router = Router();
+
+router.get('/', ZodValid({
+  query: z.object({ name: z.string().nonempty("name cannot be empty") })
+}), async (req, res, next) => {
+  const name = req.query.name;
+  logger.info(`Hello World! ${name}`);
+  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+});
+
+
+router.post('/', Json, ZodValid({
+  body: z.object({ 
+    name: z.string().nonempty("name cannot be empty").min(8, "name at least 8 length"),
+    pass: z.string().nonempty("password cannot be empty").min(8, "password at least 8 lenght"),
+    email: z.string().email("email is invalid") })
+}), async (req, res, next) => {
+  const name = req.body.name;
+  logger.info(`Hello World! ${name}`);
+  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+});
+
+module.exports = router;
 ```
 
 #### Database
@@ -355,6 +391,24 @@ When we don't need to retuen the msg, we can give "false" to "back".
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
 ```
 The framework just supports exception code of 200 and 400, but you can customize it more.
+
+### TypeScript
+
+If you generate evp-express project of TypeScript. There are several things that needed to be noticed:
+
+- **types declaration**
+cli predefined some types for config, exhandler etc in `src/types/index.d.ts`. You can modify and expand it, but before doing this should you know what are you doing and what maybe caused.
+- **npm scripts**
+cli predefined some different scripts from the JavaScript project:
+  * `npm run tsc:build`: execute this to compile your codes to .js to dist directory
+  * `npm run start`: execute this to run the compiled codes in dist directory
+  * `npm run restart`: execute this to compile and then run codes in dist directory
+
+### EvpConfig
+
+since v1.2.1, in the root directory of project, there will be a `evpconfig.json` file. In it has one option: `lang`, it should be `"typescript"` or `"javascript"` and same with your project language. It works when you execute command `evp-express add <template>` to judge is your project based on TypeScript or JavaScript.
+
+In future, there will be more options in it.
 
 ---
 

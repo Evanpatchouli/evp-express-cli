@@ -1,6 +1,6 @@
 {
   "name": "evp-express-cli",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "evp-express-cli, a Express.js CLI to initialize your Express Project interactively with info, log4js, database and so on.",
   "main": "index.js",
   "scripts": {
@@ -11,12 +11,12 @@
   "bin": {
     "evp-express": "./bin/cli"
   },
-    "repository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/Evanpatchouli/evp-express-cli.git"
   },
   "homepage": "https://github.com/Evanpatchouli/evp-express-cli#readme",
-    "express": [
+  "express": [
     "express-cli",
     "cli",
     "nodejs"

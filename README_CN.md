@@ -17,6 +17,10 @@
 
 **最新的5个版本报告:**
 
+**v1.2.1**
+1. 支持 TypeScript
+2. 新增 zod 模板
+
 **v1.1.1**
 1. 提供了 websocket 模板
 
@@ -32,10 +36,6 @@
 **v1.0.8**
 1. 修复缺陷: v1.0.7 有少许错误
 
-**v1.0.7**
-1. 修复缺陷: v1.0.6 在 config.js 中存在一个错误
-
-
 ## 文档
 
 - [安装](#安装)
@@ -45,6 +45,7 @@
   + [运行](#运行)
   + [模板](#模板)
     * [验证](#验证)
+    * [Zod](#zod)
     * [数据库](#数据库)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -63,6 +64,8 @@
   + [日志](#日志)
   + [响应](#响应)
   + [异常处理](#异常处理)
+  + [TypeScript](#typescript)
+  + [EvpConfig](#evpconfig)
 
 ## 安装
 
@@ -172,6 +175,42 @@ router.get('/',
   "symbol":-1,
   "type":"Bad Request"
 }
+```
+
+#### Zod
+
+Zod 模板是另一个用于验证的工具，你可以同时使用 Zod 和 Validator。模板提供了一个中间件工厂，允许你检验 `headers`, `body`, `query`, `params`，你可以像这样去使用它：
+```javascript
+const { Router } = require('express');
+const logger = require('../utils/logger');
+const Resp = require('../model/resp');
+const { ZodValid } = require('../midwares/zod');
+const { z } = require('zod');
+const { Json } = require('../midwares/bodyParser');
+
+const router = Router();
+
+router.get('/', ZodValid({
+  query: z.object({ name: z.string().nonempty("name cannot be empty") })
+}), async (req, res, next) => {
+  const name = req.query.name;
+  logger.info(`Hello World! ${name}`);
+  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+});
+
+
+router.post('/', Json, ZodValid({
+  body: z.object({ 
+    name: z.string().nonempty("name cannot be empty").min(8, "name at least 8 length"),
+    pass: z.string().nonempty("password cannot be empty").min(8, "password at least 8 lenght"),
+    email: z.string().email("email is invalid") })
+}), async (req, res, next) => {
+  const name = req.body.name;
+  logger.info(`Hello World! ${name}`);
+  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+});
+
+module.exports = router;
 ```
 
 #### 数据库
@@ -350,6 +389,26 @@ throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
 当我们不想返回具体的描述信息, 我们将 back 设置为 false。
 ```javascript
 throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
+```
+框架仅仅预置了 200 和 400 这两个异常代号，不过你可以对其自定义。
+
+### Typescript
+
+如果选择生成了一个 TypeScript 的 evp-express 项目。这里有一些需要注意的点：
+- **类型声明**
+框架在 `src/types/index.d.ts`中 为配置，异常处理等预置了一些类型。你可以修改和拓展它，但在此之前你必须明白你正在做什么以及可能造成什么后果。
+- **npm 脚本**
+框架提供了 JavaScript 项目有所不同的脚本：
+  * `npm run tsc:build`: 执行这个把你的代码重新编译为 .js 文件到 dist 目录
+  * `npm run start`: 执行这个去运行已经被编译到 dist 目录下的代码来运行项目
+  * `npm run restart`: 执行这个去重新编译并运行项目
+
+### EvpConfig
+
+自从 v1.2.1, 在项目的根目录下, 会有一个 `evpconfig.json` 文件。 其中有一个 `lang` 选项, 它的值应当是 `"typescript"` 或者 `"javascript"` 并与你的项目一致。 当你执行 `evp-express add <template>` 命令时这个选项会被用于判断你的项目是基于 TypeScript 还是 JavaScript。
+
+在未来，将会有更多的配置选项。
+
 
 ---
 

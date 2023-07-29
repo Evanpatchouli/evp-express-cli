@@ -60,6 +60,14 @@ module.exports = function cli() {
       },
       {
         type: 'list',
+        name: 'lang',
+        message: 'Language:',
+        default: 'JavaScript',
+        choices: ['JavaScript', 'TypeScript'],
+        loop: false
+      },
+      {
+        type: 'list',
         name: 'logLevel',
         message: 'logLevel:',
         default: 'INFO',
@@ -71,9 +79,9 @@ module.exports = function cli() {
         name: 'templates',
         message: 'Choose preserved templates:',
         choices: [
-          'None', 'validator', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos', 'All'
+          'None', 'validator', 'zod', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos', 'All'
         ],
-        pageSize: 10,
+        pageSize: 11,
         loop: false
       },
       {
@@ -116,7 +124,13 @@ module.exports = function cli() {
     }
     const creator = require("./lib/creator");
     console.log(chalk.blue('Start to initialize the project:'));
-    creator(answers);
+    if (answers.lang == 'TypeScript') {
+      const tscreator = require("./lib/ts/creator");
+      tscreator(answers)
+    } else {
+      creator(answers);
+    }
+    
   });
 
   program.command('start')
@@ -185,7 +199,7 @@ module.exports = function cli() {
   .description('Show all templates and devtools.')
   .action(()=>{
     console.log(chalk.blueBright("Templates:"));
-    const templates = ['validator', 'database', 'redis', 'auth', 'rabbitmq', 'socketio', 'nacos'];
+    const templates = ['validator', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos'];
     templates.forEach(template => console.log(`  ${template}`));
     console.log(chalk.blueBright("Devtools:"));
     const devtools = ['jest', 'pkg', 'pm2', 'eslint', 'babel'];
@@ -196,7 +210,13 @@ module.exports = function cli() {
   .command("add <template>")
   .description('Add certain template or devtool.')
   .action((template)=>{
-    const add = require('./lib/add');
+    let evpconfigJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'evpconfig.json'), 'utf8'));
+    let add;
+    if (evpconfigJson.lang.toLowerCase() == 'typescript') {
+      add = require('./lib/ts/add');
+    } else {
+      add = require('./lib/add');
+    }
     add(template);
   });
 
