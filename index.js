@@ -199,7 +199,7 @@ module.exports = function cli() {
   .description('Show all templates and devtools.')
   .action(()=>{
     console.log(chalk.blueBright("Templates:"));
-    const templates = ['validator', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos'];
+    const templates = ['validator', 'zod', 'database', 'redis', 'auth', 'rabbitmq', 'websocket', 'socketio', 'nacos'];
     templates.forEach(template => console.log(`  ${template}`));
     console.log(chalk.blueBright("Devtools:"));
     const devtools = ['jest', 'pkg', 'pm2', 'eslint', 'babel'];

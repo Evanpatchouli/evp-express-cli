@@ -18,6 +18,10 @@
 **最新的5个版本报告:**
 
 **v1.2.1**
+1. 修复 config 的初始化缺陷
+2. 更新 `show` 命令 
+
+**v1.2.0**
 1. 支持 TypeScript
 2. 新增 zod 模板
 
@@ -32,9 +36,6 @@
 1. 优化 utils/knex.js 中的 runSql 函数
 2. 新增 util/knex.js 中的 runSqlFile 函数
 3. 新增 midwares/bodyprep.js 中的 Text 解析器
-
-**v1.0.8**
-1. 修复缺陷: v1.0.7 有少许错误
 
 ## 文档
 
