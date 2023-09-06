@@ -17,6 +17,9 @@
 
 **最新的5个版本报告:**
 
+**v1.2.2**
+1. 新特性: 支持在 `npm start`之前 `SET PORT=<port number>`
+
 **v1.2.1**
 1. 修复 config 的初始化缺陷
 2. 更新 `show` 命令 
@@ -31,11 +34,6 @@
 **v1.1.0**
 1. 重构 excather 并支持异常分类
 2. 重构 Resp 的结构
-
-**v1.0.9**
-1. 优化 utils/knex.js 中的 runSql 函数
-2. 新增 util/knex.js 中的 runSqlFile 函数
-3. 新增 midwares/bodyprep.js 中的 Text 解析器
 
 ## 文档
 

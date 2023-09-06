@@ -17,6 +17,9 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.2.2**
+1. New feature: `SET PORT=<port number>` before `npm start` is supported
+
 **v1.2.1**
 1. fix config init bug
 2. update `show` command
@@ -31,11 +34,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 **v1.1.0**
 1. refactor exhandler and support exception classification
 2. refactor Resp structure
-
-**v1.0.9**
-1. Improve utils/knex.js runSql function
-2. New util/knex.js runSqlFile function
-3. New Text bodyparser in midwares/bodyparser.js
 
 ## Documentation
 
