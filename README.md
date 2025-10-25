@@ -17,6 +17,10 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **Latest 5 versions reports:**
 
+**v1.2.3**
+1. fix: `knex.js` init
+2. fix: set `express` version to v4.
+
 **v1.2.2**
 1. New feature: `SET PORT=<port number>` before `npm start` is supported
 
@@ -30,10 +34,6 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
 **v1.1.1**
 1. provide websocket template
-
-**v1.1.0**
-1. refactor exhandler and support exception classification
-2. refactor Resp structure
 
 ## Documentation
 
