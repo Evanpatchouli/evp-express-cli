@@ -25,6 +25,7 @@
 - [x] 06. **统一 HTTP 服务与各启动、部署入口**
   - TS 的明文 HTTP/2 服务无法响应普通 HTTP 请求，CLI、PM2、Pkg 入口及资源路径也与产物不一致。JS/TS 首页均需真实 HTTP 验证，start 传递输出和退出状态，TS 的部署工具指向 dist，打包包含根 assets。
   - 验收（`32dc707`）。JS 和编译后的 TS 均用 HTTP/1.1 返回 200 及 `Hello World!`。`test/start.test.js` 检查 TS 入口、自定义退出码 7 和标准错误输出。
+  - Windows 实际执行 `npm run build:win` 后，只将生成的 exe 复制到空目录，仍可读取内置配置并返回 HTTP 200。Pkg 的 node16-win-x64 目标内置 Node 16.16.0。PM2 配置指定的入口也已单独启动验证。
 
 - [x] 07. **修复 Validator 并统一 Express 4 错误处理**
   - ValidRace 空链挂起、快成功会提前放行；TS 有两处未判空索引；校验消息无法进入业务错误响应。保留现有默认 HTTP 200 和自定义状态策略，异步错误传到 Express，已发送响应头时委托后续处理。
@@ -69,3 +70,13 @@
 - [x] 17. **补全 Windows 盘符大小写边界检查**
   - 最终静态复核发现，使用字符串全等判断工作目录自身时，Windows 盘符大小写可能不同。用平台路径相对关系判断目录是否相同，并用模拟文件系统覆盖盘符根目录场景。
   - 验收。两种大小写的盘符指向同一目录时，清理函数在遍历文件前即拒绝操作。回归测试只使用内存路径和文件系统替身。
+
+- [x] 18. **为 Redis 生成可移植的 TypeScript 声明**
+  - 在通过 junction 链接 Redis SDK 的项目中，TS 4.9 无法为隐式返回类型生成声明。让公开的代理接口只引用 redis 包的 createClient 类型；验证常规安装与链接依赖两种布局。
+  - 验收。同一链接布局上，修正前 TypeScript 报 TS2742，修正后编译通过。端到端脚本也检查实际生成的声明只引用 SDK 公共类型。
+
+## 最终验证
+
+- `npm test` 用于运行仓库回归测试，`npm run test:generated` 使用 npm 实际安装临时项目并验证生成产物。
+- Express 4.22.3 的 JS/TS 集成矩阵共 66 项通过，覆盖首页、校验、上传、两种实时通信传输及全部九种 TS 可选模板的编译。
+- MySQL、Redis、RabbitMQ、Nacos 的成功、失败和就绪时序使用可控驱动替身验证。Socket.IO、WebSocket 和 HTTP 使用真实客户端。

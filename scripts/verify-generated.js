@@ -55,7 +55,13 @@ function verify() {
       const options = { cwd, stdio: 'inherit' };
       if (typescript) execSync('npm run tsc:build', options);
       execFileSync(process.execPath, [__filename, '--http', typescript ? 'dist' : 'src'], { ...options, timeout: 15000 });
-      if (!typescript) {
+      if (typescript) {
+        execFileSync(process.execPath, [cli, 'add', 'redis'], options);
+        execSync('npm run tsc:build', options);
+        const declaration = fs.readFileSync(path.join(cwd, 'dist/utils/redisProxy.d.ts'), 'utf8');
+        assert.match(declaration, /from ['"]redis['"]/);
+        assert.doesNotMatch(declaration, /@redis\/|node_modules/);
+      } else {
         execFileSync(process.execPath, [cli, 'add', 'eslint'], options);
         execSync('npm ci', options);
         const fromApp = createRequire(path.join(cwd, 'package.json'));
