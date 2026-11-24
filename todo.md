@@ -17,7 +17,7 @@
 - [x] 05. **固定可构建的 TypeScript 和 Node 类型组合**
   - 原 TypeScript 4.9 无法解析浮动的 Node 类型。维持 Express 4、Node 16.17 的基线，普通新建 TS 项目应通过 tsc。
 
-- [ ] 06. **统一 HTTP 服务与各启动、部署入口**
+- [x] 06. **统一 HTTP 服务与各启动、部署入口**
   - TS 的明文 HTTP/2 服务无法响应普通 HTTP 请求，CLI、PM2、Pkg 入口及资源路径也与产物不一致。JS/TS 首页均需真实 HTTP 验证，start 传递输出和退出状态，TS 的部署工具指向 dist，打包包含根 assets。
 
 - [ ] 07. **修复 Validator 并统一 Express 4 错误处理**

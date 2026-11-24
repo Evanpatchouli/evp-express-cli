@@ -1,2 +1,5 @@
 #!/usr/bin/env node
-require("../index.js")();
+require('../index')().catch(error => {
+  console.error(error.message);
+  process.exitCode = 1;
+});

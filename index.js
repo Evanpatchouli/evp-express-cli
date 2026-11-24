@@ -4,7 +4,6 @@ const program = new Command();
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 const pkg = require("./package.json");
-const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -135,19 +134,7 @@ module.exports = function cli() {
 
   program.command('start')
   .description('start and lauch the project dev server.')
-  .action(()=>{
-    const pros = spawn('node', ["src/index"], {cwd: process.cwd()});
-    pros.stderr.on('error', err => console.error(`${err}`));
-    pros.stdout.on('data', (data) => {
-      console.log(`${data}`);
-    });
-    pros.on('error', (err) =>{
-      console.error(`${err}`);
-    })
-    pros.on('close', (code) => {
-      console.log(`process exited with code ${code}`);
-    }); 
-  })
+  .action(() => require('./lib/start')(process.cwd()));
 
   program.command('clean <folder>')
     .description('Remove a directory inside the current working directory.')
@@ -183,6 +170,6 @@ module.exports = function cli() {
     add(template);
   });
 
-  program.parse(process.argv);
+  return program.parseAsync(process.argv);
 
 }
