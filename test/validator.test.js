@@ -11,7 +11,7 @@ function loadTemplate(name, imports) {
 }
 
 test('ValidRace only passes after every chain succeeds, including an empty list', async () => {
-  const { ValidRace } = loadTemplate('validator', {});
+  const { ValidRace } = loadTemplate('validator', { 'express-validator': {} });
   const empty = { array: () => [] };
   const finished = {};
   const delayed = new Promise(resolve => { finished.resolve = resolve; });

@@ -12,12 +12,25 @@ test('add eslint preserves installed packages, entries and user scripts', () => 
     process.chdir(root);
     const manifest = { scripts: { test: 'node --test', build: 'custom' }, main: 'custom.js' };
     fs.writeFileSync('package.json', JSON.stringify(manifest));
-    add('eslint', path.join(__dirname, '../lib'), (specs) => {
-      assert.ok(specs[0].includes('eslint'));
-      fs.writeFileSync('package.json', JSON.stringify({ ...manifest, devDependencies: { eslint: '^8' } }));
+    add('eslint', path.join(__dirname, '../lib'), () => {
+      const installed = JSON.parse(fs.readFileSync('package.json'));
+      assert.match(installed.devDependencies.eslint, /8\./);
+      installed.description = 'preserved after installation';
+      fs.writeFileSync('package.json', JSON.stringify(installed));
     });
     const saved = JSON.parse(fs.readFileSync('package.json'));
-    assert.deepEqual(saved, { ...manifest, devDependencies: { eslint: '^8' } });
+    assert.deepEqual(saved.scripts, manifest.scripts);
+    assert.equal(saved.main, manifest.main);
+    assert.equal(saved.bin, undefined);
+    assert.equal(saved.description, 'preserved after installation');
+    assert.match(saved.devDependencies.eslint, /8\./);
+    const before = fs.readFileSync('package.json', 'utf8');
+    assert.throws(() => add('jest', path.join(__dirname, '../lib'), () => { throw Error('install failed'); }));
+    assert.equal(fs.readFileSync('package.json', 'utf8'), before);
+    assert.equal(fs.existsSync('.evp-add.lock'), false);
+    add('eslint', path.join(__dirname, '../lib'), () => {
+      assert.throws(() => add('jest', path.join(__dirname, '../lib'), assert.fail), /Another add/);
+    });
   } finally {
     process.chdir(previous);
     fs.rmSync(root, { recursive: true, force: true });
