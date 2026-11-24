@@ -149,50 +149,13 @@ module.exports = function cli() {
     }); 
   })
 
-  function deleteFolder(folder, tolist) {
-    let files = [];
-    const _path = folder;
-    if(fs.existsSync(_path)) {
-      files = fs.readdirSync(_path);
-      files.forEach(function(file, index) {
-        let curPath = path.join(_path, file);
-        if(fs.statSync(curPath).isDirectory()) {
-          deleteFolder(curPath, tolist);
-        } else {
-          if(tolist){
-            process.stdout.write("\r\x1b[K");
-            process.stdout.write(`Delete file: ${curPath}`);
-          }
-          fs.unlinkSync(curPath);
-        }
-      });
-      if(tolist){
-        process.stdout.write("\r\x1b[K");
-        process.stdout.write(`Delete dictory: ${folder}`);
-      }
-      fs.rmdirSync(folder);
-    } else {
-      flag = false;
-      console.log(chalk.red(`${folder} not exists!`));
-    }
-  }
-
-  program
-  .command("clean <folder>")
-  .description(
-    'Clean certain file path.\n'+
-    '  Options:\n'+
-    '    -l,--list             List out the deleted files and folders.')
-  .option('-l, --list', 'List out the deleted files and folders.')
-  .action((folder, options)=>{
-    let flag = false;
-    flag = true;
-    deleteFolder(path.join(process.cwd(), folder), options.list);
-    if (flag) {
-      process.stdout.write("\r\x1b[K");
-      console.log(chalk.green(`Folder ${folder} has been clean!`));
-    }
-  });
+  program.command('clean <folder>')
+    .description('Remove a directory inside the current working directory.')
+    .option('-l, --list', 'List removed entries.')
+    .action((folder, options) => {
+      require('./lib/clean')(process.cwd(), folder, options.list ? console.log : undefined);
+      console.log('Removed ' + folder);
+    });
 
   program
   .command("show")
