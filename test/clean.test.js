@@ -5,6 +5,19 @@ const path = require('path');
 const os = require('os');
 const clean = require('../lib/clean');
 
+test('equivalent Windows volume roots are rejected before traversal', () => {
+  const vm = require('node:vm');
+  const module = { exports: {} };
+  const fileSystem = {
+    realpathSync: entry => entry,
+    lstatSync() { assert.fail('directory traversal must never start'); }
+  };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../lib/clean'), 'utf8'), {
+    module, require: name => name === 'path' ? path.win32 : fileSystem
+  });
+  assert.throws(() => module.exports('Q:\\', 'q:\\'), /inside the current working directory/);
+});
+
 test('clean removes only the chosen directory and unlinks directory links', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'evp-clean-'));
   try {
