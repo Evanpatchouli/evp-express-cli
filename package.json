@@ -4,7 +4,7 @@
   "description": "evp-express-cli, a Express.js CLI to initialize your Express Project interactively with info, log4js, database and so on.",
   "main": "index.js",
   "scripts": {
-    "test": "cd demo && npm start",
+    "test": "node --test",
     "start": "node bin/cli",
     "clean": "node bin/clean clean"
   },
