@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test",
+    "test:generated": "node scripts/verify-generated.js",
     "start": "node bin/cli",
     "clean": "node bin/clean clean demo"
   },

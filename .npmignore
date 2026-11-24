@@ -2,3 +2,4 @@ node_modules
 demo
 test
 todo.md
+scripts/verify-generated.js

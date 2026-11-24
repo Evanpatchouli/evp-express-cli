@@ -9,7 +9,7 @@
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
 
 
-The package is a **Express.js CLI** to initialize your Express Project interactively with info, log4js, database and so on.
+Generate an Express 4 application in JavaScript or TypeScript. The interactive CLI configures logging and adds the service integrations and development tools you select.
 
 Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
@@ -45,6 +45,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
   + [Templates](#templates)
     * [Validator](#validator)
     * [Zod](#zod)
+    * [Multipart uploads](#multipart-uploads)
     * [Database](#database)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -54,7 +55,7 @@ Change language: [中文文档](./README_CN.md) | [English Doc](./README.md)
     * [Nacos](#nacos)
   + [DevTools](#devtools)
     * [Babel](#babel)
-    * [Esint](#eslint)
+    * [ESLint](#eslint)
     * [Jest](#jest)
     * [Pkg](#pkg)
     * [PM2](#pm2)
@@ -83,152 +84,137 @@ Here are some examples.
 
 ### command
 
-`evp-express`: 
- - `-v`, `--version`: show version
- - `-i`, `--info`: show information
- - `-h`, `--help`:  display help for command
- - `new <projectName>`:  create a new Express.js project with the specified name
- - `start`: start and lauch the project dev server.
- - `clean <path>`: clean up all files in this path if exists.
- - `add <template>`: add certain template or devtool.
+| Command | Behavior |
+| --- | --- |
+| `-v`, `--version` | Print the CLI version. |
+| `-i`, `--info` | Show package information. |
+| `-h`, `--help` | Show command help. |
+| `new <projectName>` | Create an Express 4 project interactively. |
+| `show` | List available templates and development tools. |
+| `start` | Run the generated project's entry point from its root directory. |
+| `clean <path>` | Remove the specified directory within the working directory, including its contents. Use `--list` to print removed entries. |
+| `add <name>` | Add a template or development tool to the current project. |
+
+`add` installs the selected dependencies, creates missing template files and appends missing top-level sections to `assets/config.yaml`. It preserves existing configuration sections, source files and SQL scripts. When adding a service to an existing project, enable its startup call in `src/init.js` or `src/init.ts`. For example, add `await require('./utils/redisProxy').init();` inside the JavaScript initializer. In TypeScript, import the default Redis proxy from `./utils/redisProxy` and await its `init()` there. Route middleware such as Zod is attached where a route needs it.
 
 ### Create new project
 
-Directly with npx from npm repository :
-```shell
-npx evp-express-cli new <projectName>
+Run the published CLI directly with npx.
+
+```sh
+npx evp-express-cli new hello-api
 ```
-Cli locally installed:
-```shell
-npx evp-express new <projectName>
-```
-Cli globally installed:
-```shell
-evp-express new <projectName>
-```
+
+With a local installation, use `npx evp-express new hello-api`. With a global installation, use `evp-express new hello-api`.
+
+Select `None` or `All` on its own. Selecting all templates includes both validators and prompts you to choose one realtime transport, `websocket` (the default) or `socketio`. When selecting individual templates, choose at most one of these transports.
 
 ### Running
 
-Change directory to your project's root directory, and start running the server with: 
-Cli locally installed:
-```shell
-npx evp-express start
-```
-Cli globally installed:
-```shell
-evp-express start
-```
-Or just start with npm script:
-```shell
-npm run start
-```
-Or start with node directly:
-```shell
-node index
+Run commands from the generated project directory. JavaScript starts directly.
+
+```sh
+npm start
 ```
 
-### Tempates
+For TypeScript, compile first. Run the build again after changing the source.
+
+```sh
+npm run tsc:build
+npm start
+```
+
+`npm run restart` compiles and starts a TypeScript project in one command. You can also use `npx evp-express start` (local CLI) or `evp-express start` (global CLI). The CLI forwards server output, errors and exit status. The direct Node entries are `node src/index.js` for JavaScript and `node dist/index.js` for compiled TypeScript.
+
+### Templates
+
+The JavaScript snippets below use paths relative to a router in `src/router/`. In the generated router file, register routes on its existing `router` instance.
 
 
 #### Validator
 
-validator middleware is at /midwares/valider.js
+The generated `src/midwares/valider` module exposes `express-validator` as `validator` and four middleware factories.
 
-It exports these midware functions:
-```js
-module.exports = {
-  validator,
-  ValidRace,
-  ValidAll,
-  ValidQueue,
-  ValidQueueAll
-}
-```
-- validator is package of "express-validator".
-- ValidRace is to valid chains concurrently and throws the fastest one.
-- ValidAll is to valid chains concurrently and throws all result.
-- ValidQueue is to valid chains sequentially and throws the first one.
-- ValidQueueAll is to valid chains sequentially and throws all result.
+| Middleware | Chain execution | Failure response |
+| --- | --- | --- |
+| `ValidRace` | Concurrent | First detected failure. Success waits for every chain. |
+| `ValidAll` | Concurrent | Messages from all failing chains. |
+| `ValidQueue` | In order | First failure, with subsequent chains skipped. |
+| `ValidQueueAll` | In order | Messages from all failing chains. |
 
-example:
 ```js
 const { validator, ValidQueue } = require('../midwares/valider');
 
-router.get('/',
-  ValidQueue([
-    validator.query('name').trim().notEmpty().withMessage("name cannot be empty"),
-    validator.query('age').trim()
-      .notEmpty().withMessage("age cannot be empty").bail()
-      .isInt().withMessage("age must be Int").bail().toInt()
-  ]),
-(req, res, next) => {
+router.get('/hello', ValidQueue([
+  validator.query('name').trim().notEmpty().withMessage('name cannot be empty'),
+  validator.query('age').isInt().withMessage('age must be an integer').toInt()
+]), (req, res) => {
   res.send(`Hello ${req.query.name}, you are ${req.query.age} years old!`);
 });
 ```
-And you will get response like this:
+
+A request to `/hello?age=25` has no name. The default HTTP status is 200 and the response body identifies the validation failure.
+
 ```json
 {
-  "code":500,
-  "msg":"name cannot be empty",
-  "data":null,
-  "symbol":-1,
-  "type":"Bad Request"
+  "ok": false,
+  "msg": "name cannot be empty",
+  "data": null,
+  "symbol": -1,
+  "type": "Fail"
 }
 ```
 
 #### Zod
 
-The Zod template is another validator, you can use both the Zod and Validator. Template provide a midware factory, allow you to check `headers`, `body`, `query`, `params`，and you can use it like this:
-```javascript
-const { Router } = require('express');
-const logger = require('../utils/logger');
-const Resp = require('../model/resp');
-const { ZodValid } = require('../midwares/zod');
+Use Zod 3 schemas to validate `headers`, `params`, `query` or `body`. After every configured section succeeds, read parsed values from `res.locals.validated` under the matching section names. These values include defaults, coercions and transforms. The original `req` fields remain available. Mount the appropriate body parser before `ZodValid`.
+
+```js
 const { z } = require('zod');
+const { ZodValid } = require('../midwares/zod');
 const { Json } = require('../midwares/bodyParser');
 
-const router = Router();
-
-router.get('/', ZodValid({
-  query: z.object({ name: z.string().nonempty("name cannot be empty") })
-}), async (req, res, next) => {
-  const name = req.query.name;
-  logger.info(`Hello World! ${name}`);
-  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+router.post('/greetings', Json, ZodValid({
+  query: z.object({ count: z.coerce.number().int().min(1).default(1) }),
+  body: z.object({ name: z.string().trim().min(1, 'name cannot be empty') })
+}), (req, res) => {
+  const { query, body } = res.locals.validated;
+  res.json({ name: body.name, count: query.count });
 });
-
-
-router.post('/', Json, ZodValid({
-  body: z.object({ 
-    name: z.string().nonempty("name cannot be empty").min(8, "name at least 8 length"),
-    pass: z.string().nonempty("password cannot be empty").min(8, "password at least 8 lenght"),
-    email: z.string().email("email is invalid") })
-}), async (req, res, next) => {
-  const name = req.body.name;
-  logger.info(`Hello World! ${name}`);
-  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
-});
-
-module.exports = router;
 ```
+
+#### Multipart uploads
+
+Use `MultiFields(fields, limits)` for routes that accept named file fields. It places the accepted files in `req.files`, grouped by field name. The list applies to file fields. Text fields are available under `req.body`.
+
+```js
+const { MultiFields } = require('../midwares/bodyParser');
+
+router.post('/avatar', MultiFields(
+  [{ name: 'avatar', maxCount: 1 }],
+  { fileSize: 512 * 1024, files: 1 }
+), (req, res) => {
+  const file = req.files?.avatar?.[0];
+  if (!file) return res.sendStatus(400);
+  res.json({ size: file.size });
+});
+```
+
+The existing `Multi` middleware accepts any file field name and keeps `req.files` as an array. Both parsers default to 4 files of up to 5 MiB each, 32 text fields of up to 64 KiB each, and 36 multipart parts in total. The second argument to `MultiFields` overrides individual limits for that route.
 
 #### Database
 
-The Database Template use **mysql** as default datasource **mysql2** as default mysql driver and **knex.js** as default sqlClient.
+The database template uses MySQL, the mysql2 driver and Knex. From a router, use `const { sqlClient } = require('../utils/knex');` for application queries.
 
-You can require the knex-sqlClient by `const { sqlClient } = require('utils/knex');`.
+Set `database.init.mode` in `assets/config.yaml`. With `always`, startup waits for the configured schema script and then the data script. A missing script setting skips that step. With `never`, startup skips both. Successful initialization is shared within one process. A new process runs the configured scripts again, so write repeatable bootstrap SQL.
 
-You can change to use any other database, driver and sqlClient. But I strongly **suggest you not** to delete the `utils/knex` because this framework uses it to init the database.
-
-More about its configuration can be found in config.yaml.
+`runSql` and `runSqlFile` accept trusted bootstrap SQL. For MySQL they send the complete script to the server on a dedicated connection with multiple statements enabled, preserving quoted semicolons and comments. For application data, pass parameters to Knex queries on `sqlClient`.
 
 #### Redis
 
-The Redis Template depends on **redis.js** and does not with auth, if you need it, you can modify the `utils/redisProxy`.
+Set `redis.host`, `redis.port` and, for a password-protected server, `redis.password` in `assets/config.yaml`. The default empty password selects a connection without authentication.
 
-You can require the redisProxy by `const { instance } = require('utils/redisProxy');`. You can use `instance.client` to get the redis client instance.
-
-More about its configuration can be found in config.yaml.
+From an async route, use `const { client } = await require('../utils/redisProxy').init();`. Initialization resolves when the connection is ready and rejects if startup fails. The existing `instance.client` accessor remains available to projects that complete initialization at startup.
 
 #### Auth
 
@@ -236,71 +222,32 @@ The Auth Template only installs the package **passport.js** and you should custo
 
 #### RabbitMQ
 
-The RabbitMQ Template depends on **ampqlb.js** and use "guest:guest" as default user.
+The template uses amqplib. Configure the host, port, user and password under `rabbitmq` in `assets/config.yaml`. The generated local defaults use the guest account. `init()` and the `instance` promise share the same connection attempt and resolve with `{ conn, channel }` once the channel is ready.
 
-You can require the future rabbitmqProxy by `const { instance } = require('utils/rabbitmqProxy');`. You can use `instance.conn` to get the RabbitMQ connection.You can use `instance.channel` to get the default channel of RabbitMQ connection.
+```js
+const rabbit = require('../utils/rabbitmqProxy');
 
-**Notice that it is a promise**, when imported anywhere else please await in async funtion or then-flow to initialize a var of its instance.
-```javascript
-const { instance } = require('../utils/rabbitmqProxy');
-
-app.get('/', async(req, res)=>{
-const rbmqProxy = await instance;
-  const { channel: rbmq } = rbmqProxy;
-  rbmq.sendToQueue("queue", "hello");
-})
+router.post('/greetings/queue', async (req, res) => {
+  const { channel } = await rabbit.init();
+  await channel.assertQueue('greetings');
+  channel.sendToQueue('greetings', Buffer.from('hello', 'utf8'));
+  res.sendStatus(202);
+});
 ```
-**Or like this:**
-```javascript
-const RabbitmqProxy = require('../utils/rabbitmqProxy');
-
-app.get('/', async(req, res)=>{
-  const rbmqProxy = await RabbitmqProxy.instance;
-  const { channel: rbmq } = rbmqProxy;
-  rbmq.sendToQueue("queue", "hello");
-})
-```
-**Or like this:**
-```javascript
-const amqplib = require('amqplib');
-const RabbitmqProxy = require('../utils/rabbitmqProxy');
-
-//@type {amqplib.Channel}
-let rbmq = null;
-RabbitmqProxy.instance.then(rabbitmq=>{
-  rbmq = rabbitmq.channel;
-})
-
-app.get('/', async(req, res)=>{
-  rbmq.sendToQueue("queue", "hello");
-})
-```
-
-More about its configuration can be found in config.yaml.
 
 #### Websocket
 
-The Websocket Template **ws.js** and mounts Websocket Server on express-http-server.
-
-Your can require wsProxy by `const { instance } = require('utils/wsProxy');`. You can use `instance.server` to get Websocket Server instance。
-
-**Warning:** Do not use WebSocket Template and SocketIO Template together.
+The `websocket` template attaches a ws WebSocket server to the application's HTTP server. In a JavaScript router, access it with `require('../utils/wsProxy').instance.server`. In TypeScript, import the default proxy from `../utils/websocketProxy` and read `proxy.instance.server`.
 
 #### SocketIO
 
-The SocketIO Template depends on **socket.io** and mounts SockerIO Server on express-http-server.
-
-You can require the socketioProxy by `const { instance } = require('utils/socketioProxy');`. You can use `instance.server` to get the SocketIO Server instance.
-
-More about its configuration can be found in config.yaml.
+The `socketio` template serves Socket.IO and ordinary Express routes on the same HTTP server. In a JavaScript router, access the Socket.IO server with `require('../utils/socketioProxy').instance.server`.
 
 #### Nacos
 
-The Nacos Template depends on **nacos.js** and use your project's package.json's name as service name.
+Configure `nacos.server.host`, `nacos.server.port` and `nacos.namespace` in `assets/config.yaml`. The template uses `app.name` as the Nacos service name and registers `app.host` and `app.port`.
 
-You can require the nacosClient by `const { instance } = require('utils/nacosProxy');`. You can use `instance.client` to get the Nacos Client instance.
-
-More about its configuration can be found in config.yaml.
+From async code, `const { client } = await require('../utils/nacosProxy').init();` waits for SDK readiness and registration. Initialization failures propagate to the caller. The existing `instance.client` accessor is also available after startup.
 
 ### DevTools
 
@@ -324,27 +271,30 @@ You can customize jest more by yourself.
 
 #### Pkg
 
-The Pkg DevTool is for building to a executable exe file. The build output directory is dist.
-
-The `package.json's scripts.build` is replaced with "npx pkg . --out-path dist -t node16-win-x64". You can quickly start build with command "npm build". The default target is node16-win-x64, you can modify it in package.json and you should download the target node from github personally commonly.
+Run `npm run build` to create executables in `dist/`. The explicit Node 16 x64 targets are `npm run build:win`, `npm run build:linux` and `npm run build:macos`. The JavaScript entry is `src/index.js`. TypeScript build scripts compile first and package `dist/index.js`. Pkg includes the project-root `assets/**/*`.
 
 #### PM2
 
-The PM2 DevTool is a process manager that driven by node. It creates a basic ecosystem.config.js file.
-
-You can customize pm2 more by yourself.
+PM2 uses the generated `ecosystem.config.js`. Run `npx pm2 start ecosystem.config.js` in the project root. JavaScript uses `src/index.js`. For TypeScript, run `npm run tsc:build` before the first start. PM2 runs `dist/index.js`, and its generated deployment command rebuilds before reloading.
 
 ### Assets
 
-The framework use assets as default static resources folder. Please don't change it!
+`assets/` holds application inputs such as `config.yaml` and SQL initialization scripts. The generated server has no static route by default. To serve files, place them in `public/` and mount that directory in `src/app.js` before the routers.
+
+```js
+const config = require('./config').get();
+app.use('/static', express.static(config.public));
+```
+
+With this mount, `public/logo.png` is available at `/static/logo.png`. Keep configuration and initialization scripts in `assets/`.
 
 ### Config
 
-Most of the configuration are written in assets/config.yaml. And you can get the config by require `global.__config` or `__config`. Or you can get config from config.js by `require('path/to/config.js').get()`.
+Edit `assets/config.yaml` in the project root. From a JavaScript router, call `require('../config').get()` to read the cached configuration. In TypeScript, import the default config module from `../config` and call `get()`. Startup also exposes it as `global.__config`. Set the `PORT` environment variable before starting the process to override `app.port`.
 
 ### logger
 
-logger tool is at /utils/logger.js
+The generated logger is in `src/utils/logger.js` or `src/utils/logger.ts`. Set its level with `log4js.level` in the YAML configuration.
 
 ### Response
 
@@ -362,52 +312,27 @@ Resp provides three builder methods of ok, fail, bad.
 
 ### Exhandler
 
-exhandler is at /midwares/exhandler.js
+Express errors pass through `exlogger` and then `excatcher` in `src/midwares/exhandler`. A plain error returns `Resp.bad('System Exception')`. If headers have already been sent, the handler delegates to the next Express error handler.
 
-There are two middlewares: excatcher and exlogger.
+To return a business error, encode the following payload in an `Error`. The `code` field selects the response builder. Code 400 uses `Resp.fail` with optional `symbol` and `data`. Code 500 uses `Resp.bad`. The optional `status` sets the HTTP status for these public errors. It defaults to HTTP 200. Setting `back: false` returns the generic system response.
 
-Excather catch the exception and try to parse err.message as json string, if successful, it means it's our customized exception, if not, it will treat it as common exception and just return "System Error" to request source.
-
-As said, after catching global errors, the default response is Resp.bad with "System Error", if we want more, we can throw a exception by this structure:
 ```js
-throw new Error(
-  JSON.stringify({
-    code: 400,  // exception code
-    msg: "Invalid arguments."  // description
-    symbol: 20000,  // service code or error code if you need it
-    data: {},  // type of data is any
-    back: true,  // whether to return the msg, if not, will return "System Error"
-    status: 500, // http status code, default is 200
-  }
-);
+throw new Error(JSON.stringify({
+  code: 400,
+  msg: 'Invalid arguments.',
+  symbol: 20000,
+  data: { field: 'name' },
+  status: 422
+}));
 ```
-For some examples:
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
-```
-When we don't need to retuen the msg, we can give "false" to "back".
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
-```
-The framework just supports exception code of 200 and 400, but you can customize it more.
 
 ### TypeScript
 
-If you generate evp-express project of TypeScript. There are several things that needed to be noticed:
-
-- **types declaration**
-cli predefined some types for config, exhandler etc in `src/types/index.d.ts`. You can modify and expand it, but before doing this should you know what are you doing and what maybe caused.
-- **npm scripts**
-cli predefined some different scripts from the JavaScript project:
-  * `npm run tsc:build`: execute this to compile your codes to .js to dist directory
-  * `npm run start`: execute this to run the compiled codes in dist directory
-  * `npm run restart`: execute this to compile and then run codes in dist directory
+Application declarations live in `src/types/index.d.ts`. Edit source files under `src/`. Run `npm run tsc:build` to emit JavaScript into `dist/`, `npm start` to run that build, or `npm run restart` to build and start together.
 
 ### EvpConfig
 
-since v1.2.1, in the root directory of project, there will be a `evpconfig.json` file. In it has one option: `lang`, it should be `"typescript"` or `"javascript"` and same with your project language. It works when you execute command `evp-express add <template>` to judge is your project based on TypeScript or JavaScript.
-
-In future, there will be more options in it.
+The generated `evpconfig.json` records `lang` as `"JavaScript"` or `"TypeScript"`. The CLI uses this value when adding templates and selecting the startup entry.
 
 ---
 

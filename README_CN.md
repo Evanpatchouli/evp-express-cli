@@ -9,7 +9,7 @@
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1671461396351311872.svg)](https://www.murphysec.com/console/report/1671461396074487808/1671461396351311872)
 
 
-该软件包是一个 **Express.js CLI**，用于使用 info、log4js、数据库等交互初始化您的 Express 项目。
+交互式生成 JavaScript 或 TypeScript 的 Express 4 项目，可按需加入日志、数据库等服务集成和开发工具。
 
 切换语言: [中文文档](./README_CN.md) | [English Doc](./README.md)
 
@@ -45,6 +45,7 @@
   + [模板](#模板)
     * [验证](#验证)
     * [Zod](#zod)
+    * [文件上传](#文件上传)
     * [数据库](#数据库)
     * [Redis](#redis)
     * [Auth](#auth)
@@ -54,7 +55,7 @@
     * [Nacos](#nacos)
   + [开发工具](#开发工具)
     * [Babel](#babel)
-    * [Esint](#eslint)
+    * [ESLint](#eslint)
     * [Jest](#jest)
     * [Pkg](#pkg)
     * [PM2](#pm2)
@@ -83,152 +84,137 @@ npm i evp-express-cli -g
 
 ### 命令
 
-`evp-express`: 
- - `-v`, `--version`: 显示版本
- - `-i`, `--info`: 显示详细信息
- - `-h`, `--help`:  显示帮助信息
- - `new <projectName>`:  以一个特定的名字新建项目
- - `start`: 启动开发服务器
- - `clean <path>`: 删除指定路径所有文件
- - `add <template>`: 添加指定的模板或开发工具
+| 命令 | 用途 |
+| --- | --- |
+| `-v`、`--version` | 显示 CLI 版本。 |
+| `-i`、`--info` | 显示软件包信息。 |
+| `-h`、`--help` | 显示命令帮助。 |
+| `new <projectName>` | 交互式创建 Express 4 项目。 |
+| `show` | 列出可用模板和开发工具。 |
+| `start` | 从生成项目的根目录启动服务。 |
+| `clean <path>` | 删除当前工作目录下指定的目录及其内容。加 `--list` 可列出已删除的条目。 |
+| `add <name>` | 为当前项目添加模板或开发工具。 |
+
+`add` 安装所选依赖、创建缺少的模板文件，并向 `assets/config.yaml` 补充缺少的顶层配置项。已有配置段、源码和 SQL 脚本会保留。给现有项目追加服务模板时，需要在 `src/init.js` 或 `src/init.ts` 中接入初始化。例如，在 JavaScript 的初始化函数中加入 `await require('./utils/redisProxy').init();`。TypeScript 项目可从 `./utils/redisProxy` 导入默认导出，再在初始化函数中等待它的 `init()`。Zod 等路由中间件直接挂在需要校验的路由上。
 
 ### 新建项目
 
-不提前安装手脚架，直接从 npm 仓库拉取:
-```shell
-npx evp-express-cli new <projectName>
+可以使用 npx 直接运行已发布的 CLI。
+
+```sh
+npx evp-express-cli new hello-api
 ```
-手脚架局部安装时:
-```shell
-npx evp-express new <projectName>
-```
-手脚架全局安装时:
-```shell
-evp-express new <projectName>
-```
+
+本地安装后可用 `npx evp-express new hello-api`，全局安装后可用 `evp-express new hello-api`。
+
+`None` 和 `All` 均须单独选择。模板选 `All` 时会安装两种校验器，并提示在 `websocket`（默认）和 `socketio` 中选择一种实时通信方式。手动选择模板时，两者也最多选择一个。
 
 ### 运行
 
-切换至项目根目录下，通过以下命令运行: 
-手脚架局部安装时:
-```shell
-npx evp-express start
-```
-手脚架全局安装时:
-```shell
-evp-express start
-```
-或者直接通过 npm 脚本:
-```shell
-npm run start
-```
-或者直接通过 node:
-```shell
-node index
+请在生成项目的根目录运行命令。JavaScript 项目可直接启动。
+
+```sh
+npm start
 ```
 
+TypeScript 项目先编译再启动，修改源码后重新编译。
+
+```sh
+npm run tsc:build
+npm start
+```
+
+`npm run restart` 可以一次完成 TypeScript 编译和启动。也可通过本地 CLI 的 `npx evp-express start` 或全局 CLI 的 `evp-express start` 启动。CLI 转发服务的标准输出、错误输出和退出状态。直接使用 Node 时，JavaScript 的命令为 `node src/index.js`，编译后的 TypeScript 为 `node dist/index.js`。
+
 ### 模板
+
+以下 JavaScript 示例中的相对路径以 `src/router/` 下的路由文件为起点。可直接在生成的路由文件中使用已有的 `router` 实例。
 
 
 #### 验证
 
-验证中间件位于 /midwares/valider.js
+`src/midwares/valider` 导出 `express-validator`（名为 `validator`）及四种中间件工厂。
 
-它导出了这些东西:
-```js
-module.exports = {
-  validator,
-  ValidRace,
-  ValidAll,
-  ValidQueue,
-  ValidQueueAll
-}
-```
-- validator 是 "express-validator"。
-- ValidRace 是并发的验证检验链，并抛出最早检验出错误的那个。
-- ValidAll 是并发的验证检验链，并抛出全部错误。
-- ValidQueue 是串行的验证检验链，并抛出最早检验出错误的那个。
-- ValidQueueAll 是串行的验证检验链，并抛出全部错误。
+| 中间件 | 执行方式 | 错误处理 |
+| --- | --- | --- |
+| `ValidRace` | 并发 | 返回最早发现的错误，所有链成功后才放行。 |
+| `ValidAll` | 并发 | 汇总所有失败链的消息。 |
+| `ValidQueue` | 串行 | 遇到首个错误即停止。 |
+| `ValidQueueAll` | 串行 | 汇总所有失败链的消息。 |
 
-示例:
 ```js
 const { validator, ValidQueue } = require('../midwares/valider');
 
-router.get('/',
-  ValidQueue([
-    validator.query('name').trim().notEmpty().withMessage("name cannot be empty"),
-    validator.query('age').trim()
-      .notEmpty().withMessage("age cannot be empty").bail()
-      .isInt().withMessage("age must be Int").bail().toInt()
-  ]),
-(req, res, next) => {
+router.get('/hello', ValidQueue([
+  validator.query('name').trim().notEmpty().withMessage('name cannot be empty'),
+  validator.query('age').isInt().withMessage('age must be an integer').toInt()
+]), (req, res) => {
   res.send(`Hello ${req.query.name}, you are ${req.query.age} years old!`);
 });
 ```
-你将会得到如下结果:
+
+请求 `/hello?age=25` 缺少姓名。默认 HTTP 状态为 200，响应体给出业务错误。
+
 ```json
 {
-  "code":500,
-  "msg":"name cannot be empty",
-  "data":null,
-  "symbol":-1,
-  "type":"Bad Request"
+  "ok": false,
+  "msg": "name cannot be empty",
+  "data": null,
+  "symbol": -1,
+  "type": "Fail"
 }
 ```
 
 #### Zod
 
-Zod 模板是另一个用于验证的工具，你可以同时使用 Zod 和 Validator。模板提供了一个中间件工厂，允许你检验 `headers`, `body`, `query`, `params`，你可以像这样去使用它：
-```javascript
-const { Router } = require('express');
-const logger = require('../utils/logger');
-const Resp = require('../model/resp');
-const { ZodValid } = require('../midwares/zod');
+使用 Zod 3 的 schema 可校验 `headers`、`params`、`query` 和 `body`。所有配置的部分通过后，从 `res.locals.validated` 中的同名字段读取经过转换、补默认值的结果。原始 `req` 字段仍可读取。校验请求体时先挂载对应的解析器。
+
+```js
 const { z } = require('zod');
+const { ZodValid } = require('../midwares/zod');
 const { Json } = require('../midwares/bodyParser');
 
-const router = Router();
-
-router.get('/', ZodValid({
-  query: z.object({ name: z.string().nonempty("name cannot be empty") })
-}), async (req, res, next) => {
-  const name = req.query.name;
-  logger.info(`Hello World! ${name}`);
-  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
+router.post('/greetings', Json, ZodValid({
+  query: z.object({ count: z.coerce.number().int().min(1).default(1) }),
+  body: z.object({ name: z.string().trim().min(1, 'name cannot be empty') })
+}), (req, res) => {
+  const { query, body } = res.locals.validated;
+  res.json({ name: body.name, count: query.count });
 });
-
-
-router.post('/', Json, ZodValid({
-  body: z.object({ 
-    name: z.string().nonempty("name cannot be empty").min(8, "name at least 8 length"),
-    pass: z.string().nonempty("password cannot be empty").min(8, "password at least 8 lenght"),
-    email: z.string().email("email is invalid") })
-}), async (req, res, next) => {
-  const name = req.body.name;
-  logger.info(`Hello World! ${name}`);
-  res.json(Resp.ok(`Hello World! ${name}`, 1, null));
-});
-
-module.exports = router;
 ```
+
+#### 文件上传
+
+`MultiFields(fields, limits)` 用于按路由声明允许的文件字段。接收的文件在 `req.files` 中按字段名分组。白名单作用于文件字段，普通文本字段保存在 `req.body` 中。
+
+```js
+const { MultiFields } = require('../midwares/bodyParser');
+
+router.post('/avatar', MultiFields(
+  [{ name: 'avatar', maxCount: 1 }],
+  { fileSize: 512 * 1024, files: 1 }
+), (req, res) => {
+  const file = req.files?.avatar?.[0];
+  if (!file) return res.sendStatus(400);
+  res.json({ size: file.size });
+});
+```
+
+兼容已有路由的 `Multi` 接受任意文件字段名，`req.files` 仍为数组。两个解析器默认最多接收 4 个文件、每个 5 MiB，最多 32 个文本字段、每个 64 KiB，multipart 部分总数上限为 36。`MultiFields` 的第二个参数可为当前路由覆盖单项限额。
 
 #### 数据库
 
-数据库模板使用 **mysql** 作为默认数据源， **mysql2** 作为默认数据驱动 和 **knex.js**作为默认数据库客户端.
+数据库模板使用 MySQL、mysql2 驱动和 Knex。在路由中可通过 `const { sqlClient } = require('../utils/knex');` 获取应用查询客户端。
 
-你可以引用 knex-sqlClient 通过 `const { sqlClient } = require('utils/knex');`.
+在 `assets/config.yaml` 中设置 `database.init.mode`。设为 `always` 时，启动过程先等待 schema 脚本，再等待 data 脚本。未设置路径的步骤会跳过。设为 `never` 时两项均跳过。同一进程共享成功的初始化结果，新进程会重新执行配置的脚本，应编写可重复执行的初始化 SQL。
 
-你可以更换任意其它的数据库，驱动和客户端. 但我强烈 **建议你不要** 删除 `utils/knex` 因为这个框架使用它去初始化数据库。
-
-更多的配置信息可以在config.yaml找到.
+`runSql` 和 `runSqlFile` 用于受信任的初始化 SQL。使用 MySQL 时，模板通过启用了多语句支持的专用连接将完整脚本交给服务器解析，引号中的分号和注释均可保留。应用处理业务参数时可使用 `sqlClient` 的参数化查询。
 
 #### Redis
 
-Redis模板依赖于 **redis.js** 丙炔不附带身份认证, 如果你需要的话可以修改 `utils/redisProxy`.
+在 `assets/config.yaml` 中设置 `redis.host` 和 `redis.port`。需要认证的服务再配置 `redis.password`，默认空字符串表示连接时不提供密码。
 
-你可以引用 redisProxy 通过 `const { instance } = require('utils/redisProxy');`. 你可以使用 `instance.client` 去获取redis客户端实例。
-
-更多的配置信息可以在config.yaml找到.
+在异步路由中可用 `const { client } = await require('../utils/redisProxy').init();` 获取就绪的客户端。启动连接失败时，`init()` 会拒绝。对于已在启动阶段完成初始化的项目，仍可使用 `instance.client`。
 
 #### Auth
 
@@ -236,71 +222,32 @@ Redis模板依赖于 **redis.js** 丙炔不附带身份认证, 如果你需要�
 
 #### RabbitMQ
 
-RabbitMQ模板依赖于 **ampqlb.js** 并使用 "guest:guest" 作为默认用户.
+模板使用 amqplib。主机、端口、用户名和密码在 `assets/config.yaml` 的 `rabbitmq` 段配置，生成的本地示例使用 guest 账户。`init()` 和 `instance` Promise 共享一次连接尝试，在通道就绪后返回 `{ conn, channel }`。
 
-你可以引用 异步的 rabbitmqProxy 通过 `const { instance } = require('utils/rabbitmqProxy');`. 你可以使用 `instance.conn` 去获取 rabbitmq连接实例.你可以使用 `instance.channel` 去获取rabbitmq的默认通道实例。
+```js
+const rabbit = require('../utils/rabbitmqProxy');
 
-**注意它是一个promise**, 当被在任何地方引用时，请使用异步语法糖去获取实例，或者通过同步流的方式。
-```javascript
-const { instance } = require('../utils/rabbitmqProxy');
-
-app.get('/', async(req, res)=>{
-const rbmqProxy = await instance;
-  const { channel: rbmq } = rbmqProxy;
-  rbmq.sendToQueue("queue", "hello");
-})
+router.post('/greetings/queue', async (req, res) => {
+  const { channel } = await rabbit.init();
+  await channel.assertQueue('greetings');
+  channel.sendToQueue('greetings', Buffer.from('hello', 'utf8'));
+  res.sendStatus(202);
+});
 ```
-**Or like this:**
-```javascript
-const RabbitmqProxy = require('../utils/rabbitmqProxy');
-
-app.get('/', async(req, res)=>{
-  const rbmqProxy = await RabbitmqProxy.instance;
-  const { channel: rbmq } = rbmqProxy;
-  rbmq.sendToQueue("queue", "hello");
-})
-```
-**Or like this:**
-```javascript
-const amqplib = require('amqplib');
-const RabbitmqProxy = require('../utils/rabbitmqProxy');
-
-//@type {amqplib.Channel}
-let rbmq = null;
-RabbitmqProxy.instance.then(rabbitmq=>{
-  rbmq = rabbitmq.channel;
-})
-
-app.get('/', async(req, res)=>{
-  rbmq.sendToQueue("queue", "hello");
-})
-```
-
-更多的配置信息可以在config.yaml找到.
 
 #### Websocket
 
-Websocket模板依赖于 **ws.js** 并且挂载服务器于 express-http-server 上.
-
-你可以引用 wsProxy 通过 `const { instance } = require('utils/wsProxy');`. 你可以使用 `instance.server` 去获取 Websocket 服务器实例。
-
-**警告：** 不要同时使用 Websocket 模板和 SocketIO 模板。
+`websocket` 模板将 ws 服务器挂到应用的 HTTP 服务器。JavaScript 路由可通过 `require('../utils/wsProxy').instance.server` 取得服务端实例。TypeScript 从 `../utils/websocketProxy` 导入默认导出后读取 `proxy.instance.server`。
 
 #### SocketIO
 
-SocketIO模板依赖于 **socket.io** 并且挂载服务器于 express-http-server 上.
-
-你可以引用 socketioProxy 通过 `const { instance } = require('utils/socketioProxy');`. 你可以使用 `instance.server` 去获取 SocketIO 服务器实例。
-
-更多的配置信息可以在config.yaml找到.
+`socketio` 模板让 Socket.IO 和普通 Express 路由共用同一 HTTP 服务器。JavaScript 路由可通过 `require('../utils/socketioProxy').instance.server` 获取 Socket.IO 服务端实例。
 
 #### Nacos
 
-Nacos模板依赖于 **nacos.js** 并且默认使用你项目的包名作为服务名。
+在 `assets/config.yaml` 配置 `nacos.server.host`、`nacos.server.port` 和 `nacos.namespace`。模板以 `app.name` 为服务名，注册的地址和端口取自 `app.host` 与 `app.port`。
 
-你可以引用 nacosClient 通过 `const { instance } = require('utils/nacosProxy');`. 你可以使用 `instance.client` 去获取 Nacos 客户端实例。
-
-更多的配置信息可以在config.yaml找到.
+在异步代码中使用 `const { client } = await require('../utils/nacosProxy').init();`，可等待 SDK 就绪并完成注册。初始化失败会传给调用方。启动完成后也可使用已有的 `instance.client`。
 
 ### 开发工具
 
@@ -324,27 +271,30 @@ Jest工具只是安装了基本的依赖和创建了一个配置文件。此外,
 
 #### Pkg
 
-Pkg工具用于构建可执行的exe程序，输出目录为dist。
-
-`package.json's scripts.build` 被替换为 "npx pkg . --out-path dist -t node16-win-x64". 你可以进行快速的构建通过"npm build"命令. 默认的编译目标是 node16-win-x64, 你可以在 package.json 中修改它并且你通常需要去Github上下载对应的目标node.
+运行 `npm run build` 将可执行文件生成到 `dist/`。指定 Node 16 x64 目标时可使用 `npm run build:win`、`npm run build:linux` 或 `npm run build:macos`。JavaScript 入口为 `src/index.js`。TypeScript 的打包脚本会先编译，再打包 `dist/index.js`。Pkg 会包含项目根目录下的 `assets/**/*`。
 
 #### PM2
 
-PM2是一个由node驱动的进程管理器. 框架创建了一个基础的配置文件(ecosystem.consig.js)
-
-你可以更多的自定义它。
+PM2 使用生成的 `ecosystem.config.js`。在项目根目录执行 `npx pm2 start ecosystem.config.js` 即可启动。JavaScript 入口为 `src/index.js`。TypeScript 首次启动前先运行 `npm run tsc:build`，PM2 将运行 `dist/index.js`，生成的部署命令也会在重载前重新编译。
 
 ### 资源
 
-框架将assets目录当作资源目录，请不要修改它！
+`assets/` 存放 `config.yaml`、初始化 SQL 等应用资源。生成的服务默认没有挂载静态路由。如需提供公开文件，可将文件放入 `public/`，在 `src/app.js` 中于路由之前挂载该目录。
+
+```js
+const config = require('./config').get();
+app.use('/static', express.static(config.public));
+```
+
+挂载后，`public/logo.png` 的访问路径为 `/static/logo.png`。配置和初始化脚本保留在 `assets/`。
 
 ### 配置
 
-绝大多数配置信息被写在 assets/config.yaml 中. 你可以引用config通过 `global.__config` 或者 `__config`.
+编辑项目根目录下的 `assets/config.yaml`。JavaScript 路由可调用 `require('../config').get()` 读取已缓存的配置。TypeScript 从 `../config` 导入默认导出后调用 `get()`。启动过程也会将配置设在 `global.__config` 上。启动前设置环境变量 `PORT` 可覆盖 `app.port`。
 
 ### 日志
 
-日志工具位于 /utils/logger.js
+日志模块位于 `src/utils/logger.js` 或 `src/utils/logger.ts`，级别由 YAML 中的 `log4js.level` 配置。
 
 ### 响应
 
@@ -362,51 +312,27 @@ class Resp {
 
 ### 异常处理
 
-异常处理中间件位于 /midwares/exhandler.js
+错误依次经过 `src/midwares/exhandler` 中的 `exlogger` 和 `excatcher`。普通异常对外返回 `Resp.bad('System Exception')`。响应头已经发送时，中间件将错误委托给后续 Express 错误处理器。
 
-这里导出了两个中间件: excatcher and exlogger。
+需要对外返回业务错误时，可将下面的内容编码为 `Error` 的消息。`code` 选择响应类型，400 使用 `Resp.fail` 并可带 `symbol`、`data`，500 使用 `Resp.bad`。对外返回的这两类业务错误可以通过 `status` 指定 HTTP 状态，默认是 200。`back: false` 会返回通用系统错误。
 
-Excather 捕捉异常并尝试将 err.message 作为 json 字符串解析, 如果解析成功, 这代表是自定义的异常, 否则将被当作通用异常并返回 "System Error" 给请求源。
-
-正如所说的, 在捕获错误后, 默认的是返回"System Error"的坏响应, 如果我们想要更多的情况, 我们可以按照下面这种形式返抛出异常:
 ```js
-throw new Error(
-  JSON.stringify({
-    code: 400,  // 异常分类码
-    msg: "Invalid arguments."  // 描述信息
-    symbol: 20000,  // 业务码或者错误码，如果你需要的话
-    data: {},  // 携带的数据，格式任意
-    back: true,  // 是否返回上面的msg，否则返回"System Error"
-    status: 500, // http状态码，默认200
-  }
-);
+throw new Error(JSON.stringify({
+  code: 400,
+  msg: 'Invalid arguments.',
+  symbol: 20000,
+  data: { field: 'name' },
+  status: 422
+}));
 ```
-举几个例子：
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments."});
-```
-当我们不想返回具体的描述信息, 我们将 back 设置为 false。
-```javascript
-throw new Error(JSON.stringify({code:400,msg:"Invalid arguments.",back:false});
-```
-框架仅仅预置了 200 和 400 这两个异常代号，不过你可以对其自定义。
 
-### Typescript
+### TypeScript
 
-如果选择生成了一个 TypeScript 的 evp-express 项目。这里有一些需要注意的点：
-- **类型声明**
-框架在 `src/types/index.d.ts`中 为配置，异常处理等预置了一些类型。你可以修改和拓展它，但在此之前你必须明白你正在做什么以及可能造成什么后果。
-- **npm 脚本**
-框架提供了 JavaScript 项目有所不同的脚本：
-  * `npm run tsc:build`: 执行这个把你的代码重新编译为 .js 文件到 dist 目录
-  * `npm run start`: 执行这个去运行已经被编译到 dist 目录下的代码来运行项目
-  * `npm run restart`: 执行这个去重新编译并运行项目
+`src/types/index.d.ts` 保存应用类型声明。源码放在 `src/` 下，使用 `npm run tsc:build` 将 JavaScript 输出到 `dist/`。`npm start` 运行编译产物，`npm run restart` 一次完成编译和启动。
 
 ### EvpConfig
 
-自从 v1.2.1, 在项目的根目录下, 会有一个 `evpconfig.json` 文件。 其中有一个 `lang` 选项, 它的值应当是 `"typescript"` 或者 `"javascript"` 并与你的项目一致。 当你执行 `evp-express add <template>` 命令时这个选项会被用于判断你的项目是基于 TypeScript 还是 JavaScript。
-
-在未来，将会有更多的配置选项。
+生成的 `evpconfig.json` 将 `lang` 记为 `"JavaScript"` 或 `"TypeScript"`。CLI 追加模板和选取启动入口时会读取这个值。
 
 
 ---
