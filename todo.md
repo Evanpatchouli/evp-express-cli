@@ -41,7 +41,7 @@
 - [x] 13. **修复 Nacos 模板及注册就绪时机**
   - TS 模板变量错位导致加载即失败；JS 的注册未等待。两种模板都应生成有效 YAML 和源码，init 等待 SDK ready 和注册完成。
 
-- [ ] 14. **修正 Socket.IO 和 Express 的挂载顺序**
+- [x] 14. **修正 Socket.IO 和 Express 的挂载顺序**
   - 原握手同时进入 Express 与 Engine.IO。先让 HTTP 服务接入 Express，再初始化实时通信服务；验证普通首页、真实握手及回显。
 
 - [ ] 15. **统一模板清单、互斥规则和项目创建安装**
